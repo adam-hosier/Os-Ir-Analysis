@@ -23,9 +23,10 @@ r=6                                 #number of data points used in analysis
 cs =  299792458                     #speed of light m/s
 hp = 6.62607015*(10)**(-34)         #plancks constant 
 JeV = 1/(1.602176634*10**(-19))     #Joules to eV
-crit = 3.5                          #criteria for outlier detection (number of standard deviation)
+crit = 4                          #criteria for outlier detection (number of standard deviation)
 bins = 10                           #number of bins used for histograms
-
+offset1 = 0.001                     #offset in photon counts to avoid zeros for weighted fitting 
+siglev1 = 2                         #number of std err used in final calc 
 binrange = 0.002
 
 JGOsNa = 7.4491
@@ -50,8 +51,8 @@ econv = 8065.543937            #conversion from inverse cm to eV
 ftranloc = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4')
 #Desktop Files 
 wavefile = str(ftranloc + '\\OsIrWavelengthCal5.csv')          ###Adams calibration, but seperated for each individual spectra
-#wavefile2 = str(ftranloc + '\\OsIrWavelengthCal6c.csv')     ###Adam's calibration (cal set basis)
-wavefile2 = str(ftranloc + '\\OsIrWavelengthCalSam.csv')    ###Sam's calibration (cal set basis)
+wavefile2 = str(ftranloc + '\\OsIrWavelengthCal6b.csv')     ###Adam's calibration (cal set basis)
+#wavefile2 = str(ftranloc + '\\OsIrWavelengthCalSam.csv')    ###Sam's calibration (cal set basis)
 
 visualbadfiles = str(ftranloc + '\\badshit.csv')
 redDatatab = str(ftranloc + '\\OsIr_NucChargeRadius_ReducedDataTable2.csv')
@@ -742,7 +743,7 @@ for v in range(1, 12):
     v = 2*v
     
     #v = 2*v-1
-
+    tval2 = 2.201
     if v==15 or v==16:
         continue
     cIr = 0
@@ -750,6 +751,9 @@ for v in range(1, 12):
     fram2 = 0
     framIr = 0
     framOs = 0
+
+    ############################## 4-gauss fit over 1 normalized calibration set. 
+
 
     for k in range(np.shape(df)[1]):        #Ir
 
@@ -798,6 +802,7 @@ for v in range(1, 12):
     # #plt.show() 
     # plt.close() 
 
+    ######################### Individual spectra analysis (single gauss fit)
 
     for k in range(np.shape(df)[1]):        #Ir individual spectra(Na-like) 
 
@@ -837,11 +842,8 @@ for v in range(1, 12):
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
 
-            yirna += irphot.tolist()
+            irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
             
-
-
-
             ###calibration uncertainty determination 
             modcalIr = Model(gauss)
             params=Parameters() 
@@ -863,7 +865,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -879,7 +881,7 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(irwave))
             params.add('sig', value = 0.01, min=0)
 
-            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=None)
+            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=np.sqrt(irphot))
             params.update(resultir.params)
             xplot = np.linspace(np.min(irwave), np.max(irwave), num=1000)
             yplot = modIr.eval(params=params, x=xplot)
@@ -887,11 +889,11 @@ for v in range(1, 12):
                 pass
             elif resultir.params['mu'].stderr < 0.05:
                 irna.append(resultir.params['mu'].value)
-                irnae.append(np.sqrt(resultir.params['mu'].stderr**2 + calunc**2))
+                irnae.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
                 irnatime.append(np.float64(df2.iloc[1,k]))
 
                 irna1cal.append(calunc)
-                irna1stat.append(resultir.params['mu'].stderr)
+                irna1stat.append(siglev1*resultir.params['mu'].stderr)
                 irna1sys.append(samsysunc[v])
 
                 
@@ -963,7 +965,9 @@ for v in range(1, 12):
 
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
-            yirmg += irphot.tolist()
+
+            irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
+            #yirmg += irphot.tolist()
             ###calibration uncertainty determination 
             modcalIr = Model(gauss)
             params=Parameters() 
@@ -985,7 +989,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -1001,7 +1005,7 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(irwave))
             params.add('sig', value = 0.01, min=0)
 
-            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=None)
+            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=irphot/np.sqrt(irphot))
             params.update(resultir.params)
             #params.pretty_print()
             xplot = np.linspace(np.min(irwave), np.max(irwave), num=1000)
@@ -1010,11 +1014,11 @@ for v in range(1, 12):
             if resultir.params['mu'].stderr is not None:# or resultir.params['mu'].stderr < 0.05: 
             
                 irmg.append(resultir.params['mu'].value)
-                irmge.append(np.sqrt(resultir.params['mu'].stderr**2 + calunc**2))
+                irmge.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
                 irmgtime.append(np.float64(df2.iloc[1,k]))
 
                 irmg1cal.append(calunc)
-                irmg1stat.append(resultir.params['mu'].stderr)
+                irmg1stat.append(siglev1*resultir.params['mu'].stderr)
                 irmg1sys.append(samsysunc[v])
                 
             else:
@@ -1073,7 +1077,9 @@ for v in range(1, 12):
 
             xosna += oswave.tolist()
             yosna += osphot.tolist()
-
+            #print(np.min(osphot))
+            osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
+            #print(np.min(osphot))
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
             params=Parameters() 
@@ -1095,7 +1101,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -1114,20 +1120,28 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(oswave))
             params.add('sig', value = 0.01)
             
-            resultos = modOs.fit(osphot, params=params, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
+            resultos = modOs.fit(osphot, params=params, x=oswave, weights=osphot/np.sqrt(osphot), nan_policy='omit', max_nfev=None)
             params.update(resultos.params)
 
             
             if resultos.params['mu'].stderr < 0.05:
                 osna.append(resultos.params['mu'].value)
-                osnae.append(np.sqrt(resultos.params['mu'].stderr**2 + calunc**2))
+                osnae.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
                 osnatime.append(np.float64(df2a.iloc[1,b]))
 
                 osna1cal.append(calunc) 
-                osna1stat.append(resultos.params['mu'].stderr)
+                osna1stat.append(siglev1*resultos.params['mu'].stderr)
                 osna1sys.append(samsysunc[v])
 
-                
+                # plt.figure() 
+                # yfitting = resultos.eval(params=params, x=np.linspace(np.min(oswave), np.max(oswave), num=1000))
+                # plt.plot(np.linspace(np.min(oswave), np.max(oswave), num=1000), yfitting)
+                # plt.scatter(oswave, osphot)
+                # plt.errorbar(oswave, osphot, yerr=np.sqrt(osphot), ls='none')
+                # plt.minorticks_on()
+                # plt.show()
+                # plt.close() 
+
 
 
                 
@@ -1185,7 +1199,7 @@ for v in range(1, 12):
             xosmg += oswave.tolist()
             yosmg += osphot.tolist()
 
-
+            osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
             params=Parameters() 
@@ -1208,7 +1222,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -1225,15 +1239,15 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(oswave))
             params.add('sig', value = 0.01)
             
-            resultos = modOs.fit(osphot, params=params, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
+            resultos = modOs.fit(osphot, params=params, x=oswave, weights=osphot/np.sqrt(osphot), nan_policy='omit', max_nfev=None)
             params.update(resultos.params)
             if resultos.params['mu'].stderr < 0.05:
                 osmg.append(resultos.params['mu'].value)
-                osmge.append(np.sqrt(resultos.params['mu'].stderr**2 + calunc**2))
+                osmge.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
                 osmgtime.append(np.float64(df2a.iloc[1,b]))
 
                 osmg1cal.append(calunc)
-                osmg1stat.append(resultos.params['mu'].stderr)
+                osmg1stat.append(siglev1*resultos.params['mu'].stderr)
                 osmg1sys.append(samsysunc[v])
                 
 
@@ -1290,7 +1304,7 @@ for v in range(1, 12):
 
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
-
+            irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
             ###calibration uncertainty determination 
             modcalIr = Model(gauss)
             params=Parameters() 
@@ -1312,7 +1326,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -1328,7 +1342,7 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(irwave))
             params.add('sig', value = 0.01, min=0)
 
-            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=None)
+            resultir = modIr.fit(irphot, params=params, x=irwave, max_nfev = None, nan_policy='omit', weights=irphot/np.sqrt(irphot))
             params.update(resultir.params)
             xplot = np.linspace(np.min(irwave), np.max(irwave), num=1000)
             yplot = modIr.eval(params=params, x=xplot)
@@ -1346,11 +1360,11 @@ for v in range(1, 12):
                 pass
             elif resultir.params['mu'].stderr < 0.01:
                 irna2.append(resultir.params['mu'].value)
-                irnae2.append(np.sqrt(resultir.params['mu'].stderr**2 + calunc**2))
+                irnae2.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
                 irnatime2.append(np.float64(df2.iloc[1,k]))
 
                 irna2cal.append(calunc)
-                irna2stat.append(resultir.params['mu'].stderr)
+                irna2stat.append(siglev1*resultir.params['mu'].stderr)
                 irna2sys.append(samsysunc[v])
             else:
                 pass
@@ -1406,7 +1420,8 @@ for v in range(1, 12):
 
             osenergy = JeV*hp*cs/(oswave * 10**(-9))
             osphot = (3*osfit) / (osenergy /3.6)
-
+            #osphot = osphot * framOs
+            osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
             params=Parameters() 
@@ -1428,7 +1443,7 @@ for v in range(1, 12):
             
             temp1 = np.matmul(coma, colvec)
         
-            temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
+            temp = tval2*np.sqrt(np.matmul(colvec.T, temp1))
             
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
@@ -1444,18 +1459,18 @@ for v in range(1, 12):
             params.add('mu', value = np.mean(oswave))
             params.add('sig', value = 0.01)
             
-            resultos = modOs.fit(osphot, params=params, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
+            resultos = modOs.fit(osphot, params=params, x=oswave, weights=osphot/np.sqrt(osphot), nan_policy='omit', max_nfev=None)
             params.update(resultos.params)
             if str(resultos.params['mu'].stderr) == 'None':
                 pass
             elif resultos.params['mu'].stderr < 0.05:
                 osna2.append(resultos.params['mu'].value)
-                osnae2.append(np.sqrt(resultos.params['mu'].stderr**2 + calunc**2))
+                osnae2.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
                 osnatime2.append(np.float64(df2a.iloc[1,b]))
 
 
                 osna2cal.append(calunc) 
-                osna2stat.append(resultos.params['mu'].stderr)
+                osna2stat.append(siglev1*resultos.params['mu'].stderr)
                 osna2sys.append(samsysunc[v])
             else:
                 pass
@@ -1584,25 +1599,25 @@ for v in range(1, 12):
     if result.params['mu'].stderr is not None or result.params['mu2'].stderr is not None or result.params['mu3'].stderr is not None or result.params['mu4'].stderr is not None:
         calibset.append(v)
         IrNa.append(result.params['mu'].value)
-        IrNae.append(np.sqrt((result.params['mu'].stderr)**2 + (calunc)**2))
+        IrNae.append(np.sqrt((siglev1*result.params['mu'].stderr)**2 + (calunc)**2))
         # irna1cal.append(calunc)
         # irna1stat.append(result.params['mu'].stderr)
         # irna1sys.append(samsysunc[v])
 
         OsNa.append(result.params['mu2'].value)
-        OsNae.append(np.sqrt((result.params['mu2'].stderr)**2 + (calunc2)**2))
+        OsNae.append(np.sqrt((siglev1*result.params['mu2'].stderr)**2 + (calunc2)**2))
         # osna1cal.append(calunc2) 
         # osna1stat.append(result.params['mu2'].stderr)
         # osna1sys.append(samsysunc[v])
 
         IrMg.append(result.params['mu3'].value)
-        IrMge.append(np.sqrt((result.params['mu3'].stderr)**2 + (calunc3)**2))
+        IrMge.append(np.sqrt((siglev1*result.params['mu3'].stderr)**2 + (calunc3)**2))
         # irmg1cal.append(calunc3)
         # irmg1stat.append(result.params['mu3'].stderr)
         # irmg1sys.append(samsysunc[v])
 
         OsMg.append(result.params['mu4'].value)
-        OsMge.append(np.sqrt((result.params['mu4'].stderr)**2 + (calunc4)**2)) 
+        OsMge.append(np.sqrt((siglev1*result.params['mu4'].stderr)**2 + (calunc4)**2)) 
         # osmg1cal.append(calunc4)
         # osmg1stat.append(result.params['mu4'].stderr)
         # osmg1sys.append(samsysunc[v])
@@ -1674,8 +1689,8 @@ for v in range(1, 12):
     temp1 = np.matmul(coma, colvec)
     temp12 = np.matmul(coma, colvec2)
 
-    temp = 2.4*np.sqrt(np.matmul(colvec.T, temp1))
-    temp2 = 2.4 * np.sqrt(np.matmul(colvec2.T, temp12))
+    temp = 2.201*np.sqrt(np.matmul(colvec.T, temp1))
+    temp2 = 2.201*np.sqrt(np.matmul(colvec2.T, temp12))
 
     calunc = temp[0,0]
     calunc2 = temp2[0,0]
@@ -1761,29 +1776,29 @@ for v in range(1, 12):
 
 
 
-print('#################################################################################')
-print('Os Na-like cal  ', np.sum(np.array(osna1cal)**2)/(len(osna1cal)**2), ' nm')
-print('Os Na-like stat : ', np.sum(np.array(osna1stat)**2)/(len(osna1stat)**2), ' nm')
-print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
-print('Os Na-like 2nd cal : ', np.sum(np.array(osna2cal)**2)/(len(osna2cal)**2), ' nm')
-print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
-print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
+# print('#################################################################################')
+# print('Os Na-like cal  ', np.sum(np.array(osna1cal)**2)/(len(osna1cal)**2), ' nm')
+# print('Os Na-like stat : ', np.sum(np.array(osna1stat)**2)/(len(osna1stat)**2), ' nm')
+# print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
+# print('Os Na-like 2nd cal : ', np.sum(np.array(osna2cal)**2)/(len(osna2cal)**2), ' nm')
+# print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
+# print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
 
-print('ir Na-like cal : ', np.sum(np.array(irna1cal)**2)/(len(irna1cal)**2), ' nm')
-print('ir Na-like stat : ', np.sum(np.array(irna1stat)**2)/(len(irna1stat)**2), ' nm')
-print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
-print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
-print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
-print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
+# print('ir Na-like cal : ', np.sum(np.array(irna1cal)**2)/(len(irna1cal)**2), ' nm')
+# print('ir Na-like stat : ', np.sum(np.array(irna1stat)**2)/(len(irna1stat)**2), ' nm')
+# print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
+# print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
+# print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
+# print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
 
-print('Os mg-like cal : ', np.sum(np.array(osmg1cal)**2)/(len(osmg1cal)**2), ' nm')
-print('Os mg-like stat : ', np.sum(np.array(osmg1stat)**2)/(len(osmg1stat)**2), ' nm')
-print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
-print('ir mg-like cal : ', np.sum(np.array(irmg1cal)**2)/(len(irmg1cal)**2), ' nm')
-print('ir mg-like stat : ', np.sum(np.array(irmg1stat)**2)/(len(irmg1stat)**2), ' nm')
-print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
+# print('Os mg-like cal : ', np.sum(np.array(osmg1cal)**2)/(len(osmg1cal)**2), ' nm')
+# print('Os mg-like stat : ', np.sum(np.array(osmg1stat)**2)/(len(osmg1stat)**2), ' nm')
+# print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
+# print('ir mg-like cal : ', np.sum(np.array(irmg1cal)**2)/(len(irmg1cal)**2), ' nm')
+# print('ir mg-like stat : ', np.sum(np.array(irmg1stat)**2)/(len(irmg1stat)**2), ' nm')
+# print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
 
-print('#################################################################################')
+# print('#################################################################################')
 
 
 
@@ -2373,20 +2388,20 @@ plt.close()
 
 
 
-# plt.figure() 
-# plt.title('Na-like Systematic Polynomial')
-# plt.scatter(nosnatime, nosna, c='b',label='Na-like Os')
-# plt.errorbar(nosnatime, nosna, yerr=nosnae, ls='none')
-# plt.scatter(nirnatime, nirna, c='r', label='Na-like Ir')
-# plt.errorbar(nirnatime, nirna, yerr=nirnae, ls='none')
-# plt.plot(nosxplot, nosyplot)
-# plt.plot(nirxplot, niryplot)
-# plt.xlabel('time [hr]')
-# plt.ylabel('centroid [nm]')
-# plt.legend()
-# plt.minorticks_on()
-# plt.show() 
-# plt.close() 
+plt.figure() 
+plt.title('Na-like Systematic Polynomial')
+plt.scatter(nosnatime, nosna, c='b',label='Na-like Os')
+plt.errorbar(nosnatime, nosna, yerr=nosnae, ls='none')
+plt.scatter(nirnatime, nirna, c='r', label='Na-like Ir')
+plt.errorbar(nirnatime, nirna, yerr=nirnae, ls='none')
+plt.plot(nosxplot, nosyplot)
+plt.plot(nirxplot, niryplot)
+plt.xlabel('time [hr]')
+plt.ylabel('centroid [nm]')
+plt.legend()
+plt.minorticks_on()
+plt.show() 
+plt.close() 
 
 
 # plt.figure() 

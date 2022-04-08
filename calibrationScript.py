@@ -22,26 +22,17 @@ plot = True
 #pval = 0.025
 pval = 0.16 
 cinterval = 95
-crit = 5
+crit = 3.5
 siglev = 1
 
-#fnew = 'C:/Users/Adam/Desktop/Calibration/'
-#fnew = 'C:/Users/Adam/Desktop/CalibrationTest/'
-fnew = 'C:\\Users\\ahosi\\Desktop\\CalibrationTest'
+fnew = 'C:\\Users\\ahosi\\Desktop\\Calibration6b'
 fnew2 = 'C:\\Users\\ahosi\\Desktop\\Plots2Check'
 fnew3 = 'C:\\Users\\ahosi\\Desktop\\CalSpecLines'
-#df = pd.read_csv(r"C:\Users\Adam\Desktop\OsIr Files\OsIr_NucChargeRadius_ReducedDataTable.csv")
-#df1 = pd.read_csv(r"C:\Users\Adam\Desktop\OsIr Files\OsIr_NucChargeRadius_ReducedDataTable.csv")
-#df2 = pd.read_csv(r"C:\Users\Adam\Desktop\OsIr Files\OsIr_NucChargeRadius_SpectrumNo.csv")
 
 df = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_ReducedDataTable.csv")
 df1 = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_ReducedDataTable.csv")
 df2 = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_SpectrumNo.csv")
 
-
-#df = pd.read_csv(r"C:\Users\ahosi\OneDrive\Desktop\File Transfer\File Transfer\OsIr Files\OsIr_NucChargeRadius_ReducedDataTable.csv")
-#df1 = pd.read_csv(r"C:\Users\ahosi\OneDrive\Desktop\File Transfer\File Transfer\OsIr Files\OsIr_NucChargeRadius_ReducedDataTable.csv")
-#df2 = pd.read_csv(r"C:\Users\ahosi\OneDrive\Desktop\File Transfer\File Transfer\OsIr Files\OsIr_NucChargeRadius_SpectrumNo.csv")
 
 df.drop(df.columns[df.columns.str.contains('Os', case=False)], axis=1, inplace=True)
 df.drop(df.columns[df.columns.str.contains('Ir', case=False)], axis=1, inplace=True)    
@@ -163,105 +154,115 @@ cbg = np.array([96,130,388,447, 1336])
 
 #Sam's lines 
 
-wlen = np.array([6.73832,
-    6.894,
+wlen = np.array([
+#    6.73832,
+#    6.894,
     7.5764,
     8.80929,
     9.7502,
-    9.81166,
-    9.82629,
-    10.2909,
-    10.3084,
-    10.6138,
-    11.1136,
-    11.42,
+#    9.81166,
+#    9.82629,
+#    10.2909,
+#    10.3084,
+##    10.6138,
+#    11.1136,
+#    11.42,
     11.6691,
-    12.2516,
-    12.2702,
+#    12.2516,
+#    12.2702,
     12.7676,
     14.3314,
     14.7138,
-    19.5004,
-    19.6233,
-    19.6526])
+    19.5004])
+#    19.6233,
+#    19.6526])
 
-wlenerr = np.array([0.00012,
-    0.002,
+wlenerr = np.array([
+#    0.00012,
+#    0.002,
     0.0004,
     0.00014,
     0.0004,
-    0.00021,
-    0.00021,
-    0.00019,
-    0.00019,
+#    0.00021,
+#    0.00021,
+#    0.00019,
+#    0.00019,
+##    0.0005,
+#    0.0018,
+#    0.004,
     0.0005,
-    0.0018,
-    0.004,
-    0.0005,
-    0.00017,
-    0.00017,
+#    0.00017,
+#    0.00017,
     0.0007,
     0.0007,
     0.0007,
-    0.0008,
-    0.00042,
-    0.00042])
+    0.0008])
+#    0.00042,
+#    0.00042])
 
-c = np.array([459,
-    482,
+c = np.array([
+#    459,
+#    482,
     586,
     762,
     891,
-    899,
-    901,
-    962,
-    964,
-    1004,
-    1068,
-    1106,
+#    899,
+#    901,
+#    962,
+#    964,
+##    1004,
+#    1068,
+#    1106,
     1137,
-    1208,
-    1210,
+#    1208,
+#    1210,
     1270,
     1451,
     1494,
-    1999,
-    2011,
-    2014])
+    1999])
+#    2011,
+#    2014])
 
 
-wlenbg = np.array([5.2154,
+wlenbg = np.array([4.761,
+#    5.2154,
+#Ba Na-like:
+    5.98461,
     6.2909,
     6.6623,
-    12.392,
-    12.5818,
-    12.993,
+#    12.392,
+#    12.5818,
+#    12.993,
     13.3246,
     15.0101,
-    17.2169,
-    17.3081])
+    17.2169])
+#    17.3081])
 
-wlenerrbg = np.array([0.0025,
+wlenerrbg = np.array([0.001,
+#    0.0025,
+    0.0002,
     0.0012,
     0.0007,
-    0.003,
-    0.005,
-    0.003,
+#    0.003,
+#    0.005,
+#    0.003,
     0.0014,
     0.0005,
-    0.0003,
-    0.0005])
+    0.0003])
+#    0.0005])
 
-cbg = np.array([210,
+cbg = np.array([130,
+#    210,
+    338,
     388,
     447,
-    1225,
-    1248,
-    1297,
+#    1225,
+#    1248,
+#    1297,
     1336,
     1528,
-    1766,
-    1775])
+    1766])
+#    1775])
 3
 r= 4
 rb=1 
@@ -272,32 +273,6 @@ num_cols2 = len(df1.columns)
 m = 0
 
 num_colsbg = len(dfb.columns) -6
-
-# samsysunc = [0.00061,
-#     0.00069,
-#     0.00063,
-#     0.00057,
-#     0.00063,
-#     0.00046,
-#     0.00062,
-#     0.00066,
-#     0.00066,
-#     0.0006,
-#     0.00051,
-#     0.00044,
-#     0.00073,
-#     0.0005,
-#     0.00066,
-#     0.00067,
-#     0.00066,
-#     0.00057,
-#     0.00059,
-#     0.00061,
-#     0.00061,
-#     0.00051,
-#     0.00056]
-
-
 
 
 channel = np.zeros([len(c), num_cols-m], dtype=object)
@@ -651,12 +626,12 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
 
     chanluncnm = testd(cen, fit.params['B'].value, fit.params['C'].value, fit.params['D'].value, cenerr)
     
-    cutoff = 2         #cutoff reduced chi-squared value for iterative systematic uncertainty estimation
-    inc = 0.0001           #incremental step for " " " " (nm)
-    maxit = 1000            #max iterations for " " " "
+    cutoff = 1.5        #cutoff reduced chi-squared value for iterative systematic uncertainty estimation
+    inc = 0.000005          #incremental step for " " " " (nm)
+    maxit = 1000           #max iterations for " " " "
     b = 0
     pixel = np.linspace(0, 2047, num=2048)
-
+    #print('initial: ', fit.redchi)
     while fit.redchi > cutoff: 
         chanluncnm = testd(cen, fit.params['B'].value, fit.params['C'].value, fit.params['D'].value, cenerr)
         newerr = np.sqrt((wlenerr)**2 + (chanluncnm)**2) + (b*inc)
@@ -678,6 +653,7 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     newerr = np.sqrt((wlenerr)**2 + (chanluncnm)**2) + (b*inc)
     newerrno = np.sqrt((wlenerr)**2 + (chanluncnm)**2)
     fit = mod.fit(x=cen, data=wlen, params=params, nan_policy='omit', weights=1/newerr, max_nfev=2000)
+    #print('final: ', fit.redchi)
     params.update(fit.params)
     fitno = mod2.fit(x=cen, data=wlen, params=params2, nan_policy='omit', weights = 1/newerrno, max_nfev=2000)
     params2.update(fitno.params)
@@ -687,7 +663,6 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     residualno = fitno.residual / fitno.weights
 
     num=len(wlen)
-    #print(num)
     degf = num - 4
     tval = stats.t.ppf(1-((100-cinterval)/2/100), degf)
 
@@ -704,12 +679,7 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     conband = np.reshape(conband, (np.shape(conband)[0],1)).T
     conbandno = fitno.eval_uncertainty(sigma=siglev, x=cal)
 
-    #print(np.min(conband), np.max(conband), np.mean(conband))
-    cbtest = fit.ci_report()
-    #print(cbtest)
-
-    #print(np.shape(cb))
-    #print(np.shape(conband))
+  
     polyc['cbno'] = cbno 
     polyc['paramsno'] = fitno.params
     polyc['covarno'] = fitno.covar
@@ -733,6 +703,7 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     polyc['sysunc'] = b*inc
     polyc['newerr'] = newerr
     polyc['residual'] = residual
+    polyc['tval'] = tval
 
     return polyc
 
@@ -924,7 +895,7 @@ sysunc = np.zeros([num_cols,1])
 sysunc2 = np.zeros([num_cols,1])
 calnum = []
 cali = []
-
+tval1 = []
 for i in range(num_cols):
 
     names.append(str(df.columns[i])+str(dfb.columns[i]))
@@ -1027,7 +998,7 @@ for i in range(num_cols):
     newdfz2.to_csv(fnew  + '/' +'Cal'+str(i+1) + names[i]+'_' + 'RemovedLines'+ '.csv', index=False)
 
     sysunc2[i,0] = newfit['sysunc']
-
+    tval1.append(newfit['tval'])
     if plot==True:
         # plt.figure() 
         # plt.title(str(df.columns[i]) + '  ,  ' + str(dfb.columns[i]))
@@ -1064,8 +1035,8 @@ for i in range(num_cols):
         plt.errorbar(x=c, y=newfit['residualno'], yerr=newfit['newerrno'], ecolor='b', ls='none')
         #plt.ylim([-10**(-2), 10**(-2)])
         #plt.xlim([np.min(arr[:,2]), np.max(arr[:,2])])
-        plt.xlim([3.95, 20.5])
-        plt.ylim([-10*10**(-3), 10*10**(-3)])
+        plt.xlim([4.00, 20.00])
+        plt.ylim([-5*10**(-3), 5*10**(-3)])
         #plt.plot(pcal['calibration'], confband[i,:], c='b', label='95% conf band')
         #plt.plot(pcal['calibration'], -confband[i,:], c='b')
         #plt.plot(newfit['calibration'], newfit['cb2'][0,:], c='r', label=str(siglev)+'-sigma conf band(with)')
@@ -1109,7 +1080,8 @@ for i in range(num_cols):
     dfz = np.array([newfit['calibration'], cband]).T
 
     newdfz = pd.DataFrame(data=dfz, columns=['calibration', 'confband'])
-    newdfz.to_csv(fnew  + '/' +'Cal'+str(i+1)+ names[i]+'_' + 'Calibration'+ '.csv', index=False)
+    #newdfz.to_csv(fnew  + '/' +'Cal'+str(i+1)+ names[i]+'_' + 'Calibration'+ '.csv', index=False)
+    newdfz.to_csv(fnew  + '/' +'Cal'+str(i+1)+ '/'+ names[i]+'_' + 'Calibration'+ '.csv', index=False)
     calnum.append('Cal'+str(i+1))
     cali.append(newfit['calibration'])
 
@@ -1138,15 +1110,15 @@ for i in range(num_cols):
     #print(newfit['covar']) 
     #print(dfcovar)
     newdfcovar = pd.DataFrame(data=dfcovar, columns=['K0', 'K1', 'K2', 'K3'])
-    newdfcovar.to_csv(fnew  + '/' + 'Cal'+str(i+1)+ names[i]+'_' + 'CovarianceMatrix'+ '.csv', index=False)
-    
+    #newdfcovar.to_csv(fnew  + '/' + 'Cal'+str(i+1)+ names[i]+'_' + 'CovarianceMatrix'+ '.csv', index=False)
+    newdfcovar.to_csv(fnew  + '/' + 'Cal'+str(i+1)+ '/'+ names[i]+'_' + 'CovarianceMatrix'+ '.csv', index=False)
     print('Calibration #'+ str(i+1)+' completed.')
 
 sysunc = np.reshape(sysunc, (np.shape(sysunc)[0],))
 sysunc2 = np.reshape(sysunc2, (np.shape(sysunc2)[0],))
-
-dfz3 = np.array([sysunc, sysunc2]).T
-newdfz3 = pd.DataFrame(data=dfz3, columns=['Before removal', 'after removal'])
+tval1 = np.reshape(tval1, (np.shape(tval1)[0],))
+dfz3 = np.array([sysunc, sysunc2, tval1]).T
+newdfz3 = pd.DataFrame(data=dfz3, columns=['Before removal', 'after removal', 'tval'])
 newdfz3.to_csv(fnew + 'Systematic_Uncertainty.csv', index=False)
 
 cali = np.array(cali).T

@@ -989,7 +989,7 @@ for i in range(num_cols):
     postparerr = np.array([newfit['K0e'], newfit['K1e'], newfit['K2e'], newfit['K3e']])
     postpar = np.array([Kpars, postparams, postparerr]).T
     postpardf = pd.DataFrame(data=postpar, columns=['Parameters', 'Value', 'Uncertainty'])
-    postpardf.to_csv(fnew  + '/' +'Cal'+str(i+1)+ names[i]+'_' + 'PolyParameters'+ '.csv', index=False)
+    postpardf.to_csv(fnew  + '/' +'Cal'+str(i+1)+ '/' + names[i]+'_' + 'PolyParameters'+ '.csv', index=False)
     
     totbad = np.reshape(totbad, (len(totbad),1))
     dfz2 = totbad 

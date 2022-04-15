@@ -18,6 +18,7 @@ import glob
 
 #plotpath = str('C:\\Users\\ahosi\\Desktop\\FileTrans4\\NewMethodPlots\\')
 #plotpath = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\TestPlots\\')
+#style = 'diff'
 style = 'diff'
 r=6                                 #number of data points used in analysis
 cs =  299792458                     #speed of light m/s
@@ -53,7 +54,7 @@ ftranloc = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4')
 wavefile = str(ftranloc + '\\OsIrWavelengthCal5.csv')          ###Adams calibration, but seperated for each individual spectra
 wavefile2 = str(ftranloc + '\\OsIrWavelengthCal6b.csv')     ###Adam's calibration (cal set basis)
 #wavefile2 = str(ftranloc + '\\OsIrWavelengthCalSam.csv')    ###Sam's calibration (cal set basis)
-
+sysfile = str(ftranloc + '\\Calibration6bSystematic_Uncertainty.csv')
 visualbadfiles = str(ftranloc + '\\badshit.csv')
 redDatatab = str(ftranloc + '\\OsIr_NucChargeRadius_ReducedDataTable2.csv')
 #specNumtab = str('ftranloc + '\\OsIr_NucChargeRadius_SpectrumNo02.csv')
@@ -68,7 +69,7 @@ df2 = pd.read_csv(r""+specNumtab)
 dfdrop = pd.read_csv(r""+dropTab)
 df2copy = copy.deepcopy(df2)
 dfwa = pd.read_csv(r""+wavefile2)
-
+dfsys = pd.read_csv(r""+sysfile)
 
 calibrationuncert = []
 
@@ -206,32 +207,7 @@ osnae2c = []
 irnatime2c = []
 osnatime2c = []
 
-samsysunc = [0.00061,
-    0.00069,
-    0.00063,
-    0.00057,
-    0.00063,
-    0.00046,
-    0.00062,
-    0.00066,
-    0.00066,
-    0.0006,
-    0.00051,
-    0.00044,
-    0.00073,
-    0.0005,
-    0.00066,
-    0.00067,
-    0.00066,
-    0.00057,
-    0.00059,
-    0.00061,
-    0.00061,
-    0.00051,
-    0.00056]
-
-
-
+adsysunc = dfsys['after removal']
 
 
 
@@ -518,6 +494,8 @@ def Histogram(res, bins, bin_range, num):
     Res['sigma']= calcparams['sig']
     Res['ABS Line Position Error'] = calcparams['sig'] / np.sqrt(totalobs)
     Res['calc params'] = params
+    Res['mu stderr'] = params['mu'].stderr
+    Res['mu val'] = params['mu'].value
 
     return Res
 
@@ -703,6 +681,8 @@ def OutlierDet(osna, Oserr, osnatime, irna, Irerr, irnatime, poly, crit):       
     ODres['c_1'] = newfit['c_1'] 
     ODres['d_1'] = newfit['d_1']
     ODres['d_2'] = newfit['d_2'] 
+    ODres['chi-sq'] = newfit['chi-sq']
+    ODres['red-chi-sq'] = newfit['red-chi-sq']
     
     return ODres
 
@@ -739,7 +719,7 @@ irmg1sys = []
 osnastat1ori = []
 
 
-for v in range(1, 12):
+for v in range(1, 11):
     v = 2*v
     
     #v = 2*v-1
@@ -854,12 +834,16 @@ for v in range(1, 12):
             resultcalir = modcalIr.fit(irfit, params=params, x=irpix, weights=None, nan_policy='omit', max_nfev=None)
             params.update(resultcalir.params)
 
+            #print(params['A'].value)
+
             for name in glob.glob(ftranloc+'\\Calibration\\'+calstring+'\\*CovarianceMatrix.csv'):
                 #for name in glob.glob('C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\Calibration\\'+df2.iloc[2,k]+'\\*CovarianceMatrix.csv'):
                 nam = name
 
             tempdf = pd.read_csv(r""+nam)
             coma = np.array(tempdf)
+
+
 
             colvec = parts(resultcalir.params['mu'].value)
             
@@ -894,7 +878,7 @@ for v in range(1, 12):
 
                 irna1cal.append(calunc)
                 irna1stat.append(siglev1*resultir.params['mu'].stderr)
-                irna1sys.append(samsysunc[v])
+                irna1sys.append(adsysunc[v])
 
                 
             else:
@@ -1019,7 +1003,7 @@ for v in range(1, 12):
 
                 irmg1cal.append(calunc)
                 irmg1stat.append(siglev1*resultir.params['mu'].stderr)
-                irmg1sys.append(samsysunc[v])
+                irmg1sys.append(adsysunc[v])
                 
             else:
                 pass
@@ -1131,7 +1115,7 @@ for v in range(1, 12):
 
                 osna1cal.append(calunc) 
                 osna1stat.append(siglev1*resultos.params['mu'].stderr)
-                osna1sys.append(samsysunc[v])
+                osna1sys.append(adsysunc[v])
 
                 # plt.figure() 
                 # yfitting = resultos.eval(params=params, x=np.linspace(np.min(oswave), np.max(oswave), num=1000))
@@ -1248,7 +1232,7 @@ for v in range(1, 12):
 
                 osmg1cal.append(calunc)
                 osmg1stat.append(siglev1*resultos.params['mu'].stderr)
-                osmg1sys.append(samsysunc[v])
+                osmg1sys.append(adsysunc[v])
                 
 
                 
@@ -1365,7 +1349,7 @@ for v in range(1, 12):
 
                 irna2cal.append(calunc)
                 irna2stat.append(siglev1*resultir.params['mu'].stderr)
-                irna2sys.append(samsysunc[v])
+                irna2sys.append(adsysunc[v])
             else:
                 pass
         
@@ -1471,7 +1455,7 @@ for v in range(1, 12):
 
                 osna2cal.append(calunc) 
                 osna2stat.append(siglev1*resultos.params['mu'].stderr)
-                osna2sys.append(samsysunc[v])
+                osna2sys.append(adsysunc[v])
             else:
                 pass
 
@@ -1602,25 +1586,25 @@ for v in range(1, 12):
         IrNae.append(np.sqrt((siglev1*result.params['mu'].stderr)**2 + (calunc)**2))
         # irna1cal.append(calunc)
         # irna1stat.append(result.params['mu'].stderr)
-        # irna1sys.append(samsysunc[v])
+        # irna1sys.append(adsysunc[v])
 
         OsNa.append(result.params['mu2'].value)
         OsNae.append(np.sqrt((siglev1*result.params['mu2'].stderr)**2 + (calunc2)**2))
         # osna1cal.append(calunc2) 
         # osna1stat.append(result.params['mu2'].stderr)
-        # osna1sys.append(samsysunc[v])
+        # osna1sys.append(adsysunc[v])
 
         IrMg.append(result.params['mu3'].value)
         IrMge.append(np.sqrt((siglev1*result.params['mu3'].stderr)**2 + (calunc3)**2))
         # irmg1cal.append(calunc3)
         # irmg1stat.append(result.params['mu3'].stderr)
-        # irmg1sys.append(samsysunc[v])
+        # irmg1sys.append(adsysunc[v])
 
         OsMg.append(result.params['mu4'].value)
         OsMge.append(np.sqrt((siglev1*result.params['mu4'].stderr)**2 + (calunc4)**2)) 
         # osmg1cal.append(calunc4)
         # osmg1stat.append(result.params['mu4'].stderr)
-        # osmg1sys.append(samsysunc[v])
+        # osmg1sys.append(adsysunc[v])
     else:
         continue
 
@@ -1702,32 +1686,32 @@ for v in range(1, 12):
     #     #IrNae.append(np.sqrt((result.params['mu'].stderr)**2 + (calunc)**2))
     #     irna2cal.append(calunc)
     #     irna2stat.append(result.params['mu'].stderr)
-    #     irna2sys.append(samsysunc[v])
+    #     irna2sys.append(adsysunc[v])
 
     #     #OsNa.append(result.params['mu2'].value)
     #     #OsNae.append(np.sqrt((result.params['mu2'].stderr)**2 + (calunc2)**2))
     #     osna2cal.append(calunc2) 
     #     osna2stat.append(result.params['mu2'].stderr)
-    #     osna2sys.append(samsysunc[v])
+    #     osna2sys.append(adsysunc[v])
 
     #     # IrMg.append(result.params['mu3'].value)
     #     # IrMge.append(np.sqrt((result.params['mu3'].stderr)**2 + (calunc3)**2))
     #     # irmg1cal.append(calunc3)
     #     # irmg1stat.append(result.params['mu3'].stderr)
-    #     # irmg1sys.append(samsysunc[v])
+    #     # irmg1sys.append(adsysunc[v])
 
     #     # OsMg.append(result.params['mu4'].value)
     #     # OsMge.append(np.sqrt((result.params['mu4'].stderr)**2 + (calunc4)**2)) 
     #     # osmg1cal.append(calunc4)
     #     # osmg1stat.append(result.params['mu4'].stderr)
-    #     # osmg1sys.append(samsysunc[v])
+    #     # osmg1sys.append(adsysunc[v])
     # else:
     #     continue
 
 
 
-    #osna2sys.append(samsysunc[v])
-    #irna2sys.append(samsysunc[v])
+    #osna2sys.append(adsysunc[v])
+    #irna2sys.append(adsysunc[v])
 
 
     #relnorm = 1520
@@ -1906,6 +1890,8 @@ def CentPoly(specos, cenos, cenerros, specir, cenir, cenerrir):
     resCP['Ir-Ydata'] = cenir 
     resCP['Ir-Ydataerr'] = cenerrir 
     resCP['Ir-Xdata'] = specir 
+    resCP['red-chi-sq'] = resultc.redchi
+    resCP['chi-sq'] = resultc.chisqr
     #resCP['Osconfband'] = cbOs 
     #resCP['Irconfband'] = cbIr 
 
@@ -2199,6 +2185,7 @@ na1 = OutlierDetection['a_1']
 nb1 = OutlierDetection['b_1']
 nc1 = OutlierDetection['c_1'] 
 
+
 nd2mg = OutlierDetectionMg['d_2']
 nd1mg = OutlierDetectionMg['d_1']
 na1mg = OutlierDetectionMg['a_1']
@@ -2264,13 +2251,21 @@ nIrHistomg = Histogram(nIrresmg, bins=bins, bin_range = 0.005, num = np.shape(ni
 
 nosunc = nOsHisto['Line Position Error']
 nirunc = nIrHisto['Line Position Error']
+nosunccal = nOsHisto['mu val']
+nirunccal = nIrHisto['mu val']
 nosuncmg = nOsHistomg['Line Position Error']
 niruncmg = nIrHistomg['Line Position Error']
+nosuncmgcal = nOsHistomg['mu val']
+niruncmgcal = nIrHistomg['mu val']
 
 print('1st Na order wavelength diff: ')
-print(ndW, np.sqrt(nosunc**2+nirunc**2))
+print(ndW, np.sqrt(nosunc**2+nirunc**2 ))
 print('1st mg order wavelength diff: ')
-print(ndWmg, np.sqrt(nosuncmg**2+niruncmg**2))
+print(ndWmg, np.sqrt(nosuncmg**2+niruncmg**2 ))
+
+
+# print('here')
+# print(nosuncmg, niruncmg, nosuncmgcal, niruncmgcal)
 
 ####
 #Second order 
@@ -2284,21 +2279,26 @@ nOsHisto2 = Histogram(nOsres2,bins=bins, bin_range = 2*0.005, num=np.shape(nosna
 nIrHisto2 = Histogram(nIrres2,bins=bins,bin_range=2*0.005,num=np.shape(nirnatime2)[0])
 nosunc2 = nOsHisto2['Line Position Error']
 nirunc2 = nIrHisto2['Line Position Error']
-ntotalunc2 = np.sqrt(nosunc2**2 + nirunc2**2)
+nosunc2cal = nOsHisto2['mu val']
+nirunc2cal = nIrHisto2['mu val']
+ntotalunc2 = np.sqrt(nosunc2**2 + nirunc2**2 )
 
 ntotalunce2 = 2*ndE2*(ntotalunc2/((nd12-nd22)/2))
 print('2nd order wavelength diff nm')
-print(nd12-nd22, np.sqrt(nosunc2**2+nirunc2**2))
+print(nd12-nd22, ntotalunc2)
 print('~~')
 print('2nd order na-like shift (gaussian): ' ,ndE2*2,' +/- ', ntotalunce2, ' eV')
 #print('2nd order na-like shift (centroid): ' ,ndE2c*2)
 print('~~')
-#print('ndW: ', ndW, nosunc, nirunc)
-#print('ndWmg: ', ndWmg, nosuncmg, niruncmg)
-ntotalunc = np.sqrt((nosunc)**2 + (nirunc)**2)
+
+#ntotalunc = np.sqrt((nosunc)**2 + (nirunc)**2 + nosunccal**2 + nirunccal**2)
+ntotalunc = np.sqrt((nosunc)**2 + (nirunc)**2 )
+
 ntotalunce = ndE * (ntotalunc / ndW)
 
-ntotaluncmg = np.sqrt((nosuncmg)**2 + (niruncmg)**2)
+#ntotaluncmg = np.sqrt((nosuncmg)**2 + (niruncmg)**2 + niruncmgcal**2 + nosuncmgcal**2)
+ntotaluncmg = np.sqrt((nosuncmg)**2 + (niruncmg)**2 )
+
 ntotaluncemg = ndEmg * (ntotaluncmg / ndWmg)
 
 nosxplot = np.linspace(np.min(nosnatime), np.max(nosnatime), num=1000)
@@ -2361,9 +2361,13 @@ IrHisto = Histogram(Irres, bins, bin_range=0.0025, num=np.shape(irnatime)[0])
 
 nosunc = nOsHisto['Line Position Error']
 nirunc = nIrHisto['Line Position Error']
-
-ntotalunc = np.sqrt(nosunc**2 + nirunc**2)
-
+nosunccal = nOsHisto['mu val']
+nirunccal = nIrHisto['mu val']
+# print('here')
+# print(nosunc, nirunc, nosunccal, nirunccal)
+#ntotalunc = np.sqrt(nosunc**2 + nirunc**2 + nosunccal**2 + nirunccal**2)
+ntotalunc = np.sqrt(nosunc**2 + nirunc**2 )
+print(ntotalunc, nosunc, nirunc)
 ntotalunce = newdE * (ntotalunc / newdW)
 
 #print('Na-like new dE (pre-removal): ', newdE, ' +/- ', totalunce, ' eV')
@@ -2400,7 +2404,7 @@ plt.xlabel('time [hr]')
 plt.ylabel('centroid [nm]')
 plt.legend()
 plt.minorticks_on()
-plt.show() 
+#plt.show() 
 plt.close() 
 
 

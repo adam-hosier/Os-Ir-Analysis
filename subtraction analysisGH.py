@@ -20,14 +20,15 @@ import glob
 #plotpath = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\TestPlots\\')
 #style = 'diff'
 style = 'diff'
-r=6                                 #number of data points used in analysis
+r=5                                 #number of data points used in analysis
+rcen = 4
 cs =  299792458                     #speed of light m/s
 hp = 6.62607015*(10)**(-34)         #plancks constant 
 JeV = 1/(1.602176634*10**(-19))     #Joules to eV
 crit = 4                          #criteria for outlier detection (number of standard deviation)
 bins = 10                           #number of bins used for histograms
-offset1 = 0.001                     #offset in photon counts to avoid zeros for weighted fitting 
-siglev1 = 2                         #number of std err used in final calc 
+offset1 = 1                     #offset in photon counts to avoid zeros for weighted fitting 
+siglev1 = 1                         #number of std err used in final calc 
 binrange = 0.002
 
 JGOsNa = 7.4491
@@ -209,6 +210,70 @@ osnatime2c = []
 
 adsysunc = dfsys['after removal']
 
+################################### Revised abs wavelength w/ set based calibration uncertainty 
+##Gaussian fitting 
+osnaset = []
+osnasete = []
+irnaset = []
+irnasete = []
+osmgset = []
+osmgsete = []
+irmgset = []
+irmgsete = []
+
+osnasetstat = []
+irnasetstat = []
+osmgsetstat = []
+irmgsetstat = []
+
+irnasetcal = []
+irmgsetcal = []
+osnasetcal = []
+osmgsetcal =  []
+
+##
+osnaset2 = []
+osnasete2 = []
+irnaset2 = []
+irnasete2 = []
+osnasetstat2 = []
+irnasetstat2 = []
+osnasetcal2 = []
+irnasetcal2 = []
+
+#####
+##Centroid 
+cosnaset = []
+cosnasete = []
+cirnaset = []
+cirnasete = []
+cosmgset = []
+cosmgsete = []
+cirmgset = []
+cirmgsete = []
+
+cosnasetstat = []
+cirnasetstat = []
+cosmgsetstat = []
+cirmgsetstat = []
+
+cirnasetcal = []
+cirmgsetcal = []
+cosnasetcal = []
+cosmgsetcal =  []
+
+##
+cosnaset2 = []
+cosnasete2 = []
+cirnaset2 = []
+cirnasete2 = []
+cosnasetstat2 = []
+cirnasetstat2 = []
+cosnasetcal2 = []
+cirnasetcal2 = []
+
+#####################################
+
 
 
 def gauss(x, A, mu, sig, B):
@@ -236,6 +301,7 @@ def centroid(x,y):
     o = 0
     res = {}
     for i in range(len(y)):
+
         o = y[i] * x[i]            
         cnum += o
         cdem += y[i]
@@ -686,8 +752,8 @@ def OutlierDet(osna, Oserr, osnatime, irna, Irerr, irnatime, poly, crit):       
     
     return ODres
 
-pixel = np.linspace(0, 2047, num=2048)
-
+#pixel = np.linspace(0, 2047, num=2048)
+pixel = np.linspace(1, 2048, num=2048)
 ####uncertainty breakdown 
 
 osna1cal = []
@@ -719,6 +785,7 @@ irmg1sys = []
 osnastat1ori = []
 
 
+
 for v in range(1, 11):
     v = 2*v
     
@@ -746,7 +813,7 @@ for v in range(1, 11):
 
             cIr +=1
 
-
+    sigtestIr = sig
     energy = JeV*hp*cs / (wave * 10**(-9))
     photc = ((3 * sig))/ (energy / 3.6) 
     photc = photc /(cIr * fram)   
@@ -763,7 +830,7 @@ for v in range(1, 11):
             calstring2 = df2a.iloc[2,b]
             cOs +=1
 
-
+    sigtestOs = sig2
     energy2 = JeV*hp*cs / (wave2 * 10**(-9))
     photc2 = ((3 * sig2))/ (energy2 / 3.6) 
     photc2 = photc2 / (cOs * fram2)
@@ -773,16 +840,238 @@ for v in range(1, 11):
     difference2 = sig - sig2            ### Ir minus Os in ADU signal 
 
     # plt.figure() 
-    # plt.plot(wave2, sig2, label='Os',c='r')
-    # plt.plot(wave2, sig, label='Ir',c='b')
-    # plt.xlabel('wavelength')
-    # plt.xlim(np.min(wave2), np.max(wave2))
+    # plt.plot(pixel, sigtestOs, label='Os',c='r')
+    # plt.plot(pixel, sigtestIr, label='Ir',c='b')
+    # plt.xlabel('Pixel')
+    # plt.xlim(np.min(pixel), np.max(pixel))
     # plt.ylabel('ADU')
     # plt.legend()
-    # #plt.show() 
+    # plt.show() 
     # plt.close() 
 
-    ######################### Individual spectra analysis (single gauss fit)
+    ####################### calibration uncertainty determination from dispersion relation
+
+    #Na-like centers 
+    # centerIr = 544
+    # centerOs = 566
+
+    #Na-like 2nd order centers
+    centerIr = 1480
+    centerOs = 1515
+    #Mg-like centers 
+    #centerIr = 574
+    #centerOs = 597
+    testIr = []
+    testOs = []
+    pOs = []
+    pIr = []
+
+    for i in range(1, 2*r):
+        testIr.append(sigtestIr[centerIr-r+i])
+        testOs.append(sigtestOs[centerOs-r+i])
+        pOs.append(pixel[centerOs-r+i])
+        pIr.append(pixel[centerIr-r+i])
+
+    modtestIr = Model(gauss)
+    paramstestIr = Parameters()
+    paramstestIr.add('A', value = np.max(testIr)-np.min(testIr), min=0)
+    paramstestIr.add('mu', value=np.mean(pIr))
+    paramstestIr.add('sig', value = 0.001, min=0)
+    paramstestIr.add('B', value = np.min(testIr))
+    resIrtest = modtestIr.fit(testIr, params=paramstestIr, x=pIr, max_nfev=None, nan_policy='omit')
+    paramstestIr.update(resIrtest.params)
+
+    
+    modtestOs = Model(gauss)
+    paramstestOs = Parameters() 
+    paramstestOs.add('A', value = np.max(testOs)-np.min(testOs), min=0)
+    paramstestOs.add('mu', value=np.mean(pOs))
+    paramstestOs.add('sig', value = 0.001, min=0)
+    paramstestOs.add('B', value = np.min(testOs))
+    resOstest = modtestOs.fit(testOs, params=paramstestOs, x=pOs, max_nfev=None, nan_policy='omit')
+    paramstestOs.update(resOstest.params)
+
+
+    ostestx = np.rint(paramstestOs['mu'].value)
+    irtestx = np.rint(paramstestIr['mu'].value)
+
+    testrang = np.linspace(irtestx, ostestx, num=(int(ostestx)-int(irtestx)+int(1)))
+
+    calteststr = 'Cal'+str(v)
+
+    for name in glob.glob(ftranloc+'\\Calibration6b\\'+calstring+'\\*PolyParameters.csv'):
+        
+        nam = name
+
+    testdf = pd.read_csv(r""+nam)
+
+    bet1 = testdf['Uncertainty'][1]
+    gam1 = testdf['Uncertainty'][2]
+    omeg1 = testdf['Uncertainty'][3]
+
+    def Funcert(x, beta, gamma, omega):
+        val = np.sqrt(beta**2 + (2*gamma*x)**2 + (3*omega*x**2)**2)
+        sumfun = np.sum(val)
+        return sumfun
+
+    
+    #estcalunc = (-1)*Funcert(testrang, bet1, gam1, omeg1)
+    estcalunc = 0
+    #########################################################
+
+    #### New calibration uncertainty determination for absolute wavelength on set basis
+    #Na-like centers 
+    nacenterIr = 544
+    nacenterOs = 566
+    nacenterIr2 = 1480
+    nacenterOs2 = 1515
+
+    #Mg-like centers 
+    mgcenterIr = 574
+    mgcenterOs = 597
+
+    natestIr = []
+    natestOs = []
+    mgtestIr = []
+    mgtestOs = []
+    natestIr2 = []
+    natestOs2 = []
+    napOs = []
+    napIr = []
+    mgpOs = []
+    mgpIr = []
+    napOs2 = []
+    napIr2 = []
+
+
+    for i in range(1, 2*r):
+        natestIr.append(sigtestIr[nacenterIr-r+i])
+        natestOs.append(sigtestOs[nacenterOs-r+i])
+        napOs.append(pixel[nacenterOs-r+i])
+        napIr.append(pixel[nacenterIr-r+i])
+
+        mgtestIr.append(sigtestIr[mgcenterIr-r+i])
+        mgtestOs.append(sigtestOs[mgcenterOs-r+i])
+        mgpOs.append(pixel[mgcenterOs-r+i])
+        mgpIr.append(pixel[mgcenterIr-r+i])
+
+        natestIr2.append(sigtestIr[nacenterIr2-r+i])
+        natestOs2.append(sigtestOs[nacenterOs-r+i])
+        napIr2.append(pixel[nacenterIr2-r+i])
+        napOs2.append(pixel[nacenterOs2-r+i])
+
+
+    namodtestIr = Model(gauss)
+    naparamstestIr = Parameters()
+    naparamstestIr.add('A', value = np.max(natestIr)-np.min(natestIr), min=0)
+    naparamstestIr.add('mu', value=np.mean(napIr))
+    naparamstestIr.add('sig', value = 0.001, min=0)
+    naparamstestIr.add('B', value = np.min(natestIr))
+    naresIrtest = namodtestIr.fit(natestIr, params=naparamstestIr, x=napIr, max_nfev=None, nan_policy='omit')
+    naparamstestIr.update(naresIrtest.params)
+
+    
+    namodtestOs = Model(gauss)
+    naparamstestOs = Parameters() 
+    naparamstestOs.add('A', value = np.max(natestOs)-np.min(natestOs), min=0)
+    naparamstestOs.add('mu', value=np.mean(napOs))
+    naparamstestOs.add('sig', value = 0.001, min=0)
+    naparamstestOs.add('B', value = np.min(natestOs))
+    naresOstest = namodtestOs.fit(natestOs, params=naparamstestOs, x=napOs, max_nfev=None, nan_policy='omit')
+    naparamstestOs.update(naresOstest.params)
+
+    mgmodtestIr = Model(gauss)
+    mgparamstestIr = Parameters()
+    mgparamstestIr.add('A', value = np.max(mgtestIr)-np.min(mgtestIr), min=0)
+    mgparamstestIr.add('mu', value=np.mean(mgpIr))
+    mgparamstestIr.add('sig', value = 0.001, min=0)
+    mgparamstestIr.add('B', value = np.min(mgtestIr))
+    mgresIrtest = mgmodtestIr.fit(mgtestIr, params=mgparamstestIr, x=mgpIr, max_nfev=None, nan_policy='omit')
+    mgparamstestIr.update(mgresIrtest.params)
+
+    
+    mgmodtestOs = Model(gauss)
+    mgparamstestOs = Parameters() 
+    mgparamstestOs.add('A', value = np.max(mgtestOs)-np.min(mgtestOs), min=0)
+    mgparamstestOs.add('mu', value=np.mean(mgpOs))
+    mgparamstestOs.add('sig', value = 0.001, min=0)
+    mgparamstestOs.add('B', value = np.min(mgtestOs))
+    mgresOstest = mgmodtestOs.fit(mgtestOs, params=mgparamstestOs, x=mgpOs, max_nfev=None, nan_policy='omit')
+    mgparamstestOs.update(mgresOstest.params)
+
+
+    ###
+    namodtestIr2 = Model(gauss)
+    naparamstestIr2 = Parameters()
+    naparamstestIr2.add('A', value = np.max(natestIr2)-np.min(natestIr2), min=0)
+    naparamstestIr2.add('mu', value=np.mean(napIr2))
+    naparamstestIr2.add('sig', value = 0.001, min=0)
+    naparamstestIr2.add('B', value = np.min(natestIr2))
+    naresIrtest2 = namodtestIr.fit(natestIr2, params=naparamstestIr2, x=napIr2, max_nfev=None, nan_policy='omit')
+    naparamstestIr2.update(naresIrtest2.params)
+
+    
+    namodtestOs2 = Model(gauss)
+    naparamstestOs2 = Parameters() 
+    naparamstestOs2.add('A', value = np.max(natestOs2)-np.min(natestOs2), min=0)
+    naparamstestOs2.add('mu', value=np.mean(napOs2))
+    naparamstestOs2.add('sig', value = 0.001, min=0)
+    naparamstestOs2.add('B', value = np.min(natestOs2))
+    naresOstest2 = namodtestOs.fit(natestOs2, params=naparamstestOs2, x=napOs2, max_nfev=None, nan_policy='omit')
+    naparamstestOs2.update(naresOstest2.params)
+
+    ###
+
+
+    calteststr = 'Cal'+str(v)
+
+    for name in glob.glob(ftranloc+'\\Calibration6b\\'+calstring+'\\*CovarianceMatrix.csv'):
+        
+        nam = name
+
+    tempdf = pd.read_csv(r""+nam)
+    coma = np.array(tempdf)
+
+    ###first order 
+    colvecnaos = parts(naresOstest.params['mu'].value)
+    temp1naos = np.matmul(coma, colvecnaos)
+    tempnaos = tval2*np.sqrt(np.matmul(colvecnaos.T, temp1naos))
+    caluncnaos = tempnaos[0,0]
+
+    colvecnair = parts(naresIrtest.params['mu'].value)
+    temp1nair = np.matmul(coma, colvecnair)
+    tempnair = tval2*np.sqrt(np.matmul(colvecnair.T, temp1nair))
+    caluncnair = tempnair[0,0]
+
+    colvecmgos = parts(mgresOstest.params['mu'].value)
+    temp1mgos = np.matmul(coma, colvecmgos)
+    tempmgos = tval2*np.sqrt(np.matmul(colvecmgos.T, temp1mgos))
+    caluncmgos = tempmgos[0,0]
+
+    colvecmgir = parts(mgresIrtest.params['mu'].value)
+    temp1mgir = np.matmul(coma, colvecmgir)
+    tempmgir = tval2*np.sqrt(np.matmul(colvecmgir.T, temp1mgir))
+    caluncmgir = tempmgir[0,0]
+
+    ###2nd order 
+    colvecnaos2 = parts(naresOstest2.params['mu'].value)
+    temp1naos2 = np.matmul(coma, colvecnaos2)
+    tempnaos2 = tval2*np.sqrt(np.matmul(colvecnaos2.T, temp1naos2))
+    caluncnaos2 = tempnaos2[0,0]
+
+    colvecnair2 = parts(naresIrtest2.params['mu'].value)
+    temp1nair2 = np.matmul(coma, colvecnair2)
+    tempnair2 = tval2*np.sqrt(np.matmul(colvecnair2.T, temp1nair2))
+    caluncnair2 = tempnair2[0,0]
+    ###
+
+    ######################### Individual spectra analysis (single gauss fit / centroid)
+    tempval = []
+    tempvale = []
+
+    tempvalc = []
+    tempvalec = []
+
 
     for k in range(np.shape(df)[1]):        #Ir individual spectra(Na-like) 
 
@@ -798,8 +1087,11 @@ for v in range(1, 11):
 
             irfit = []
             irwave = []
-
             irpix = []
+
+            irfitc = []
+            irwavec = []
+            irpixc = []
             c=544
 
             if style == 'diff':
@@ -807,23 +1099,45 @@ for v in range(1, 11):
                     irfit.append(diffIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
                     irpix.append(c-r+i)
+                
+                for i in range(1, 2*rcen):
+                    irfitc.append(diffIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)
             elif style == 'reg':
                 for i in range(1, 2*r):
                     irfit.append(framIr*sigIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
-                    irpix.append(c-r+i)    
+                    irpix.append(c-r+i)  
+
+                for i in range(1, 2*rcen):
+                    irfitc.append(framIr*sigIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)  
 
 
             xirna += irwave
 
             irfit = np.array(irfit)
             irwave = np.array(irwave)
-
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
-
             irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
             
+            irfitc = np.array(irfitc)
+            irwavec = np.array(irwavec)
+            irenergyc = JeV*hp*cs / (irwavec * 10**(-9))
+            irphotc = (3*irfitc)/(irenergyc/3.6)
+            irphotc = framIr*(irphotc+np.abs(np.min(irphotc)))+offset1
+
+
+            ################
+            testwave = dfwa[df2.iloc[2,k]]
+            testfit = df.iloc[:,k]
+            testen = JeV*hp*cs/ (testwave * 10**(-9))
+            testphot = (3*testfit)/(testen / 3.6)
+
+
             ###calibration uncertainty determination 
             modcalIr = Model(gauss)
             params=Parameters() 
@@ -843,8 +1157,6 @@ for v in range(1, 11):
             tempdf = pd.read_csv(r""+nam)
             coma = np.array(tempdf)
 
-
-
             colvec = parts(resultcalir.params['mu'].value)
             
             temp1 = np.matmul(coma, colvec)
@@ -854,8 +1166,16 @@ for v in range(1, 11):
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
 
-            irnacen.append(centroid(irwave,irphot)['centroid'])
-            irnacenu.append(np.sqrt(centroid(irwave,irphot)['cent_unc']**2 + calunc**2))
+
+            test1 = centroid(irwavec, irphotc)
+            
+
+
+            irnacen.append(centroid(irwavec,irphotc)['centroid'])
+            tempvalc.append(centroid(irwavec,irphotc)['centroid'])
+            #irnacenu.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 + calunc**2))
+            irnacenu.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 ))
+            tempvalec.append(centroid(irwavec,irphotc)['cent_unc'])
             irnacent.append(np.float64(df2.iloc[1,k]))
             ####single gauss fit
             modIr = Model(gauss)
@@ -869,16 +1189,44 @@ for v in range(1, 11):
             params.update(resultir.params)
             xplot = np.linspace(np.min(irwave), np.max(irwave), num=1000)
             yplot = modIr.eval(params=params, x=xplot)
+
+            plt.figure() 
+            plt.minorticks_on() 
+            plt.xlabel('wavelength (nm)')
+            plt.ylabel('Photon counts (arb)')
+            plt.plot(irwave, irphot, c='r', label='normalized dat')
+            # plt.plot(testwave, testphot, c='g', label='single spec')
+            plt.axvline(x=test1['centroid'], c='k', label='centroid calc')
+            plt.axvline(x=test1['centroid']+test1['cent_unc'], c='k', ls='--')
+            plt.axvline(x=test1['centroid']-test1['cent_unc'], c='k', ls='--')
+            plt.plot(xplot, yplot, c='g', label='gaussian fit')
+            plt.axvline(x=params['mu'].value, c='g')
+            plt.axvline(x=params['mu'].value+params['mu'].stderr, c='g', ls='--')
+            plt.axvline(x=params['mu'].value-params['mu'].stderr, c='g', ls='--')
+
+            plt.legend() 
+            plt.xlim(np.min(irwave), np.max(irwave))
+            #plt.show() 
+            plt.close()
+
+
+
+
             if str(resultir.params['mu'].stderr) == 'None':
                 pass
             elif resultir.params['mu'].stderr < 0.05:
                 irna.append(resultir.params['mu'].value)
-                irnae.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
+                #irnae.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
+                irnae.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2))
                 irnatime.append(np.float64(df2.iloc[1,k]))
-
+                #print(resultir.params['mu'].value, resultir.params['mu'].stderr)
                 irna1cal.append(calunc)
                 irna1stat.append(siglev1*resultir.params['mu'].stderr)
                 irna1sys.append(adsysunc[v])
+
+                tempval.append(resultir.params['mu'].value)
+                tempvale.append(siglev1*resultir.params['mu'].stderr)
+
 
                 
             else:
@@ -910,7 +1258,23 @@ for v in range(1, 11):
             # plt.close()
 
 
+    irnaset.append(np.average(tempval, weights = 1 / np.array(tempvale)))
+    irnasete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2))/len(tempval))**2 + caluncnair**2))
 
+    irnasetstat.append(np.sqrt(np.sum(np.array(tempvale)**2))/len(tempval))
+    irnasetcal.append(caluncnair)
+
+    cirnaset.append(np.average(tempvalc, weights = 1 / np.array(tempvale)))
+    cirnasete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2))/len(tempvalc))**2 + caluncnair**2))
+    cirnasetstat.append(np.sqrt(np.sum(np.array(tempvalec)**2))/len(tempvalc))
+    cirnasetcal.append(caluncnair)
+
+
+
+    tempval = []
+    tempvale = []
+    tempvalc = []
+    tempvalec = []
     for k in range(np.shape(df)[1]):        #Ir individual spectra(Mg-like) 
 
         if int(df2.iloc[2,k][3:]) == int(v):
@@ -927,18 +1291,44 @@ for v in range(1, 11):
             irwave = []
 
             irpix = []
+
+            
             c=574
+
+            # if style == 'diff':
+            #     for i in range(1, 2*r):
+            #         irfit.append(diffIr.iloc[c-r+i])
+            #         irwave.append(wave[c-r+i])
+            #         irpix.append(c-r+i)
+            # elif style == 'reg':
+            #     for i in range(1, 2*r):
+            #         irfit.append(framIr*sigIr.iloc[c-r+i])
+            #         irwave.append(wave[c-r+i])
+            #         irpix.append(c-r+i)  
+            irfitc = []
+            irwavec = []
+            irpixc = []
 
             if style == 'diff':
                 for i in range(1, 2*r):
                     irfit.append(diffIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
                     irpix.append(c-r+i)
+                
+                for i in range(1, 2*rcen):
+                    irfitc.append(diffIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)
             elif style == 'reg':
                 for i in range(1, 2*r):
                     irfit.append(framIr*sigIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
                     irpix.append(c-r+i)  
+
+                for i in range(1, 2*rcen):
+                    irfitc.append(framIr*sigIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)          
             #if v==16:
 
             xirmg += irwave
@@ -949,6 +1339,12 @@ for v in range(1, 11):
 
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
+
+            irfitc = np.array(irfitc)
+            irwavec = np.array(irwavec)
+            irenergyc = JeV*hp*cs / (irwavec * 10**(-9))
+            irphotc = (3*irfitc)/(irenergyc/3.6)
+            irphotc = framIr*(irphotc+np.abs(np.min(irphotc)))+offset1
 
             irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
             #yirmg += irphot.tolist()
@@ -978,8 +1374,11 @@ for v in range(1, 11):
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
 
-            irmgcen.append(centroid(irwave,irphot)['centroid'])
-            irmgcenu.append(np.sqrt(centroid(irwave,irphot)['cent_unc']**2 + calunc**2))
+            irmgcen.append(centroid(irwavec,irphotc)['centroid'])
+            #irmgcenu.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 + calunc**2))
+            irmgcenu.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2))
+            tempvalc.append(centroid(irwavec,irphotc)['centroid'])
+            tempvalec.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2))
             irmgcent.append(np.float64(df2.iloc[1,k]))
             ####
             modIr = Model(gauss)
@@ -998,12 +1397,17 @@ for v in range(1, 11):
             if resultir.params['mu'].stderr is not None:# or resultir.params['mu'].stderr < 0.05: 
             
                 irmg.append(resultir.params['mu'].value)
-                irmge.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
+                #irmge.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
+                irmge.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2))
                 irmgtime.append(np.float64(df2.iloc[1,k]))
 
                 irmg1cal.append(calunc)
                 irmg1stat.append(siglev1*resultir.params['mu'].stderr)
                 irmg1sys.append(adsysunc[v])
+
+                tempval.append(resultir.params['mu'].value)
+                tempvale.append(siglev1*resultir.params['mu'].stderr)
+
                 
             else:
                 pass
@@ -1024,6 +1428,21 @@ for v in range(1, 11):
             yplot2 = modIr2.eval(params=params2, x=xplot2)
 
 
+
+    irmgset.append(np.average(tempval, weights = 1 / np.array(tempvale)))
+    irmgsete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))**2 + caluncmgir**2))
+    irmgsetcal.append(caluncmgir)
+    irmgsetstat.append(np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))
+
+    cirmgset.append(np.average(tempvalc, weights = 1 / np.array(tempvalec)))
+    cirmgsete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))**2 + caluncmgir**2))
+    cirmgsetcal.append(caluncmgir)
+    cirmgsetstat.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
+
+    tempval = []
+    tempvale = []
+    tempvalc = []
+    tempvalec = []
     for b in range(np.shape(dfa)[1]):           #Os individual spectra Na-like
 
         if int(df2a.iloc[2,b][3:]) == int(v):
@@ -1040,18 +1459,38 @@ for v in range(1, 11):
             osfit = []
             oswave = []
             ospix = []
+
+            
+
+
+
             c = 566 
+
+            osfitc = []
+            oswavec = []
+            ospixc = []
+
 
             if style == 'diff':
                 for i in range(1, 2*r):
                     osfit.append(diffOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(diffOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
             if style == 'reg':
                 for i in range(1, 2*r):
                     osfit.append(framOs*sigOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(framOs*sigOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
 
             osfit = np.array(osfit)
             oswave = np.array(oswave)
@@ -1063,6 +1502,12 @@ for v in range(1, 11):
             yosna += osphot.tolist()
             #print(np.min(osphot))
             osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
+
+            osfitc = np.array(osfitc)
+            oswavec = np.array(oswavec)
+            osenergyc = JeV*hp*cs / (oswavec * 10**(-9))
+            osphotc = (3*osfitc)/(osenergyc/3.6)
+            osphotc = framOs*(osphotc+np.abs(np.min(osphotc)))+offset1
             #print(np.min(osphot))
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
@@ -1093,8 +1538,11 @@ for v in range(1, 11):
             
             
 
-            osnacen.append(centroid(oswave, osphot)['centroid'])
-            osnacenu.append(np.sqrt(centroid(oswave,osphot)['cent_unc']**2 + calunc**2))
+            osnacen.append(centroid(oswavec, osphotc)['centroid'])
+            #osnacenu.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2 + calunc**2))
+            osnacenu.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2))
+            tempvalc.append(centroid(oswavec, osphotc)['centroid'])
+            tempvalec.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2))
             osnacent.append(np.float64(df2.iloc[1,k]))
             ###Single gauss fit
             modOs = Model(gauss)
@@ -1110,21 +1558,16 @@ for v in range(1, 11):
             
             if resultos.params['mu'].stderr < 0.05:
                 osna.append(resultos.params['mu'].value)
-                osnae.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
+                #osnae.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
+                osnae.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2))
                 osnatime.append(np.float64(df2a.iloc[1,b]))
 
                 osna1cal.append(calunc) 
                 osna1stat.append(siglev1*resultos.params['mu'].stderr)
                 osna1sys.append(adsysunc[v])
 
-                # plt.figure() 
-                # yfitting = resultos.eval(params=params, x=np.linspace(np.min(oswave), np.max(oswave), num=1000))
-                # plt.plot(np.linspace(np.min(oswave), np.max(oswave), num=1000), yfitting)
-                # plt.scatter(oswave, osphot)
-                # plt.errorbar(oswave, osphot, yerr=np.sqrt(osphot), ls='none')
-                # plt.minorticks_on()
-                # plt.show()
-                # plt.close() 
+                tempval.append(resultos.params['mu'].value)
+                tempvale.append(siglev1*resultos.params['mu'].stderr)
 
 
 
@@ -1145,6 +1588,21 @@ for v in range(1, 11):
             resultos2 = modOs2.fit(osphot, params=params2, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
             params2.update(resultos2.params)
 
+    osnaset.append(np.average(tempval, weights = 1 / np.array(tempvale)))
+    osnasete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))**2 + caluncnaos**2))
+    osnasetcal.append(caluncnaos)
+    osnasetstat.append(np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))
+
+    cosnaset.append(np.average(tempvalc, weights = 1 / np.array(tempvalec)))
+    cosnasete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))**2 + caluncnaos**2))
+    cosnasetcal.append(caluncnaos)
+    cosnasetstat.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
+
+    tempval = []
+    tempvale = []
+    tempvalc = []
+    tempvalec = []
+
     for b in range(np.shape(dfa)[1]):           #Os individual spectra Mg-like
 
         if int(df2a.iloc[2,b][3:]) == int(v):
@@ -1163,16 +1621,43 @@ for v in range(1, 11):
             ospix = []
             c = 597 
 
+            # if style == 'diff':
+            #     for i in range(1, 2*r):
+            #         osfit.append(diffOs[c-r+i])
+            #         oswave.append(wave2[c-r+i])
+            #         ospix.append(c-r+i)
+            # if style == 'reg':
+            #     for i in range(1, 2*r):
+            #         osfit.append(framOs*sigOs[c-r+i])
+            #         oswave.append(wave2[c-r+i])
+            #         ospix.append(c-r+i)
+
+            osfitc = []
+            oswavec = []
+            ospixc = []
+
+
             if style == 'diff':
                 for i in range(1, 2*r):
                     osfit.append(diffOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(diffOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
             if style == 'reg':
                 for i in range(1, 2*r):
                     osfit.append(framOs*sigOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(framOs*sigOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
+
 
             osfit = np.array(osfit)
             oswave = np.array(oswave)
@@ -1184,6 +1669,12 @@ for v in range(1, 11):
             yosmg += osphot.tolist()
 
             osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
+
+            osfitc = np.array(osfitc)
+            oswavec = np.array(oswavec)
+            osenergyc = JeV*hp*cs / (oswavec * 10**(-9))
+            osphotc = (3*osfitc)/(osenergyc/3.6)
+            osphotc = framOs*(osphotc+np.abs(np.min(osphotc)))+offset1
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
             params=Parameters() 
@@ -1211,8 +1702,12 @@ for v in range(1, 11):
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
 
-            osmgcen.append(centroid(oswave,osphot)['centroid'])
-            osmgcenu.append(np.sqrt(centroid(oswave,osphot)['cent_unc']**2 + calunc**2))
+            osmgcen.append(centroid(oswavec,osphotc)['centroid'])
+            #osmgcenu.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2 + calunc**2))
+            osmgcenu.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2))
+            
+            tempvalc.append(centroid(oswavec,osphotc)['centroid'])
+            tempvalec.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2))
             osmgcent.append(np.float64(df2.iloc[1,k]))
 
             ###line center determination 
@@ -1227,12 +1722,16 @@ for v in range(1, 11):
             params.update(resultos.params)
             if resultos.params['mu'].stderr < 0.05:
                 osmg.append(resultos.params['mu'].value)
-                osmge.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
+                #osmge.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
+                osmge.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 ))
                 osmgtime.append(np.float64(df2a.iloc[1,b]))
 
                 osmg1cal.append(calunc)
                 osmg1stat.append(siglev1*resultos.params['mu'].stderr)
                 osmg1sys.append(adsysunc[v])
+
+                tempval.append(resultos.params['mu'].value)
+                tempvale.append(siglev1*resultos.params['mu'].stderr)
                 
 
                 
@@ -1252,6 +1751,21 @@ for v in range(1, 11):
             resultos2 = modOs2.fit(osphot, params=params2, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
             params2.update(resultos2.params)
 
+    osmgset.append(np.average(tempval, weights = 1 / np.array(tempvale)))
+    osmgsete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))**2 + caluncmgos**2))
+    osmgsetcal.append(caluncmgos)
+    osmgsetstat.append(np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))
+
+    cosmgset.append(np.average(tempvalc, weights = 1 / np.array(tempvalec)))
+    cosmgsete.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))**2 + caluncmgos**2))
+    cosmgsetcal.append(caluncmgos)
+    cosmgsetstat.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
+
+
+    tempval = []
+    tempvale = []
+    tempvalc = []
+    tempvalec = []
 
     for k in range(np.shape(df)[1]):        #Ir individual spectra(Na-like) 2nd order 
 
@@ -1271,17 +1785,41 @@ for v in range(1, 11):
             irpix = []
             c=1480
 
+            # if style == 'diff':
+            #     for i in range(1, 2*r):
+            #         irfit.append(diffIr.iloc[c-r+i])
+            #         irwave.append(wave[c-r+i])
+            #         irpix.append(c-r+i)
+            # elif style == 'reg':
+            #     for i in range(1, 2*r):
+            #         irfit.append(framIr*sigIr.iloc[c-r+i])
+            #         irwave.append(wave[c-r+i])
+            #         irpix.append(c-r+i)  
+
+            irfitc = []
+            irwavec = []
+            irpixc = []
+
             if style == 'diff':
                 for i in range(1, 2*r):
                     irfit.append(diffIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
                     irpix.append(c-r+i)
+                
+                for i in range(1, 2*rcen):
+                    irfitc.append(diffIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)
             elif style == 'reg':
                 for i in range(1, 2*r):
                     irfit.append(framIr*sigIr.iloc[c-r+i])
                     irwave.append(wave[c-r+i])
                     irpix.append(c-r+i)  
 
+                for i in range(1, 2*rcen):
+                    irfitc.append(framIr*sigIr.iloc[c-rcen+i])
+                    irwavec.append(wave[c-rcen+i])
+                    irpixc.append(c-rcen+i)    
 
             irfit = np.array(irfit)
             irwave = np.array(irwave)
@@ -1289,6 +1827,13 @@ for v in range(1, 11):
             irenergy = JeV*hp*cs / (irwave * 10**(-9))
             irphot = (3*irfit)/(irenergy / 3.6)
             irphot = framIr*(irphot+np.abs(np.min(irphot)))+offset1
+
+            irfitc = np.array(irfitc)
+            irwavec = np.array(irwavec)
+            irenergyc = JeV*hp*cs / (irwavec * 10**(-9))
+            irphotc = (3*irfitc)/(irenergyc/3.6)
+            irphotc = framIr*(irphotc+np.abs(np.min(irphotc)))+offset1
+
             ###calibration uncertainty determination 
             modcalIr = Model(gauss)
             params=Parameters() 
@@ -1336,20 +1881,29 @@ for v in range(1, 11):
             #plt.show() 
             plt.close()
 
-            irna2c.append(centroid(irwave,irphot)['centroid'])
-            irnae2c.append(np.sqrt(centroid(irwave,irphot)['cent_unc']**2 + calunc**2))
+            irna2c.append(centroid(irwavec,irphotc)['centroid'])
+            #irnae2c.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 + calunc**2))
+            irnae2c.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 ))
             irnatime2c.append(np.float64(df2.iloc[1,k]))
+
+            tempvalc.append(centroid(irwavec,irphotc)['centroid'])
+            tempvalec.append(np.sqrt(centroid(irwavec,irphotc)['cent_unc']**2 ))
 
             if str(resultir.params['mu'].stderr) == 'None':
                 pass
             elif resultir.params['mu'].stderr < 0.01:
-                irna2.append(resultir.params['mu'].value)
+                irna2.append(resultir.params['mu'].value-estcalunc)       #estcalunc
+                #irna2.append(resultir.params['mu'].value)
                 irnae2.append(np.sqrt(siglev1*resultir.params['mu'].stderr**2 + calunc**2))
                 irnatime2.append(np.float64(df2.iloc[1,k]))
 
                 irna2cal.append(calunc)
                 irna2stat.append(siglev1*resultir.params['mu'].stderr)
                 irna2sys.append(adsysunc[v])
+
+                tempval.append(resultir.params['mu'].value)
+                tempvale.append(siglev1*resultir.params['mu'].stderr)
+
             else:
                 pass
         
@@ -1367,9 +1921,23 @@ for v in range(1, 11):
             params2.update(resultir2.params)
             xplot2 = np.linspace(np.min(irwave), np.max(irwave), num=1000)
             yplot2 = modIr2.eval(params=params2, x=xplot2)
-            
-
+        
+    irnaset2.append(np.average(tempval, weights = 1/np.array(tempvale)))
+    irnasete2.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))**2 + caluncnair2**2))
+    irnasetcal2.append(caluncnair2)
+    irnasetstat2.append(np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))
     
+    cirnaset2.append(np.average(tempvalc, weights = 1/np.array(tempvalec)))
+    cirnasete2.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))**2 + caluncnair2**2))
+    cirnasetcal2.append(caluncnair2)
+    cirnasetstat2.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
+    
+
+    tempval = []
+    tempvale = []
+    tempvalc = []
+    tempvalec = []
+
     for b in range(np.shape(dfa)[1]):           #Os individual spectra Na-like 2nd order 
 
         if int(df2a.iloc[2,b][3:]) == int(v):
@@ -1388,16 +1956,42 @@ for v in range(1, 11):
             ospix = []
             c = 1515
 
+            # if style == 'diff':
+            #     for i in range(1, 2*r):
+            #         osfit.append(diffOs[c-r+i])
+            #         oswave.append(wave2[c-r+i])
+            #         ospix.append(c-r+i)
+            # if style == 'reg':
+            #     for i in range(1, 2*r):
+            #         osfit.append(framOs*sigOs[c-r+i])
+            #         oswave.append(wave2[c-r+i])
+            #         ospix.append(c-r+i)
+
+            osfitc = []
+            oswavec = []
+            ospixc = []
+
+
             if style == 'diff':
                 for i in range(1, 2*r):
                     osfit.append(diffOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(diffOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
             if style == 'reg':
                 for i in range(1, 2*r):
                     osfit.append(framOs*sigOs[c-r+i])
                     oswave.append(wave2[c-r+i])
                     ospix.append(c-r+i)
+
+                for i in range(1, 2*rcen):
+                    osfitc.append(framOs*sigOs[c-rcen+i])
+                    oswavec.append(wave2[c-rcen+i])
+                    ospixc.append(c-rcen+i)
 
             osfit = np.array(osfit)
             oswave = np.array(oswave)
@@ -1406,6 +2000,12 @@ for v in range(1, 11):
             osphot = (3*osfit) / (osenergy /3.6)
             #osphot = osphot * framOs
             osphot = framOs*(osphot+np.abs(np.min(osphot)))+offset1
+
+            osfitc = np.array(osfitc)
+            oswavec = np.array(oswavec)
+            osenergyc = JeV*hp*cs / (oswavec * 10**(-9))
+            osphotc = (3*osfitc)/(osenergyc/3.6)
+            osphotc = framOs*(osphotc+np.abs(np.min(osphotc)))+offset1
             ###calibration uncertainty determination 
             modcalOs = Model(gauss)
             params=Parameters() 
@@ -1432,9 +2032,15 @@ for v in range(1, 11):
             calunc = temp[0,0]
             calibrationuncert.append(calunc)
 
-            osna2c.append(centroid(oswave, osphot)['centroid'])
-            osnae2c.append(np.sqrt(centroid(oswave,osphot)['cent_unc']**2 + calunc**2))
+            osna2c.append(centroid(oswavec, osphotc)['centroid'])
+            #osnae2c.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2 + calunc**2))
+            osnae2c.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2 ))
             osnatime2c.append(np.float64(df2a.iloc[1,b]))
+
+            tempvalc.append(centroid(oswavec, osphotc)['centroid'])
+            tempvalec.append(np.sqrt(centroid(oswavec,osphotc)['cent_unc']**2 ))
+
+
             ###line center determination 
             modOs = Model(gauss)
             params = Parameters() 
@@ -1448,7 +2054,8 @@ for v in range(1, 11):
             if str(resultos.params['mu'].stderr) == 'None':
                 pass
             elif resultos.params['mu'].stderr < 0.05:
-                osna2.append(resultos.params['mu'].value)
+                #osna2.append(resultos.params['mu'].value)   #estcalunc
+                osna2.append(resultos.params['mu'].value+estcalunc)
                 osnae2.append(np.sqrt(siglev1*resultos.params['mu'].stderr**2 + calunc**2))
                 osnatime2.append(np.float64(df2a.iloc[1,b]))
 
@@ -1456,6 +2063,10 @@ for v in range(1, 11):
                 osna2cal.append(calunc) 
                 osna2stat.append(siglev1*resultos.params['mu'].stderr)
                 osna2sys.append(adsysunc[v])
+
+                tempval.append(resultos.params['mu'].value)
+                tempvale.append(siglev1*resultos.params['mu'].stderr)
+
             else:
                 pass
 
@@ -1472,7 +2083,18 @@ for v in range(1, 11):
             resultos2 = modOs2.fit(osphot, params=params2, x=oswave, weights=None, nan_policy='omit', max_nfev=None)
             params2.update(resultos2.params)
     
-           
+    osnaset2.append(np.average(tempval, weights = 1/np.array(tempvale)))
+    osnasete2.append(np.sqrt((np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))**2 + caluncnaos2**2))
+    osnasetcal2.append(caluncnaos2)
+    osnasetstat2.append(np.sqrt(np.sum(np.array(tempvale)**2)) / len(tempval))
+    
+    cosnaset2.append(np.average(tempvalc, weights = 1/np.array(tempvalec)))
+    cosnasete2.append(np.sqrt((np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))**2 + caluncnaos2**2))
+    cosnasetcal2.append(caluncnaos2)
+    cosnasetstat2.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
+    
+    
+    
     # plt.figure() 
     # plt.title('Difference spectra, scaled to 1 frame / 1 spectra , Calibration Set #'+str(v))
     # plt.plot(pixel, difference2, label='Difference of Os-Ir')
@@ -1525,6 +2147,7 @@ for v in range(1, 11):
     result = mod.fit(yfit, params=params, x=xfit, weights=None, nan_policy='omit', max_nfev=None)
     params.update(result.params)
 
+    
 
     mod2 = Model(gauss4)
     params2 = Parameters()
@@ -1550,6 +2173,17 @@ for v in range(1, 11):
     xplot2 = np.linspace(np.min(xfit2), np.max(xfit2), num=1000)
     yplot = result.eval(params=params, x=xplot)
     yplot2 = result2.eval(params=params2, x=xplot2)
+
+    plt.figure()
+    plt.plot(xfit, yfit, label='data')
+    plt.plot(xplot, yplot, label='4-gauss fit')
+    plt.legend()
+    plt.xlim(np.min(xfit),np.max(xfit))
+    plt.minorticks_on()
+    plt.show()
+    plt.close()
+
+
 
     for name in glob.glob(ftranloc+'\\Calibration\\'+calstring+'\\*CovarianceMatrix.csv'):
         #for name in glob.glob('C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\Calibration\\'+df2.iloc[2,k]+'\\*CovarianceMatrix.csv'):
@@ -1714,34 +2348,34 @@ for v in range(1, 11):
     #irna2sys.append(adsysunc[v])
 
 
-    #relnorm = 1520
-    #relnorm = 1495
-    # plt.figure()
-    # plt.plot(wave, sig, label='Ir')
-    # plt.plot(wave2, sig2 - (sig2[relnorm] - sig[relnorm]), label='Os')
-    # #plt.plot(wave3, sig3+8100, label='Bg')
-    # #plt.plot(wave4, sig4+8100, label='Ne')
-    # #plt.plot(wave3, sig3 - (sig3[relnorm] - sig[relnorm]), label='Bg')
-    # #plt.plot(wave4, sig4 - (sig4[relnorm] -sig[relnorm]), label='Ne')
-    # plt.xlabel('Wavelength (nm)')
-    # plt.ylabel('ADU signal / minute')
-    # plt.minorticks_on()
-    # plt.title('Comparison of Os + Ir spectra, Calibration Set #' + str(v))
-    # #plt.xlim(7.2, 7.7)
-    # #plt.xlim(14.4,15)
-    # # plt.axvline(x=7.4484, label='Os Na-like', c='k')
-    # # plt.axvline(x=7.2948, label='Ir Na-like', c='c')
-    # # plt.axvline(x=7.4945, label='Ir Mg-like', c='tab:purple')
-    # # plt.axvline(x=7.6570, label='Os Mg-like', c='g')
-    # #plt.xlim(7.27*2, 7.7*2)
+    relnorm = 1520
+    relnorm = 1495
+    plt.figure()
+    plt.plot(wave, sig, label='Ir')
+    plt.plot(wave2, sig2 - (sig2[relnorm] - sig[relnorm]), label='Os')
+    #plt.plot(wave3, sig3+8100, label='Bg')
+    #plt.plot(wave4, sig4+8100, label='Ne')
+    #plt.plot(wave3, sig3 - (sig3[relnorm] - sig[relnorm]), label='Bg')
+    #plt.plot(wave4, sig4 - (sig4[relnorm] -sig[relnorm]), label='Ne')
+    plt.xlabel('Wavelength (nm)')
+    plt.ylabel('ADU signal / minute')
+    plt.minorticks_on()
+    plt.title('Comparison of Os + Ir spectra, Calibration Set #' + str(v))
+    plt.xlim(7.2, 7.7)
+    #plt.xlim(14.4,15)
+    plt.axvline(x=7.4484, label='Os Na-like', c='k')
+    plt.axvline(x=7.2948, label='Ir Na-like', c='c')
+    plt.axvline(x=7.4945, label='Ir Mg-like', c='tab:purple')
+    plt.axvline(x=7.6570, label='Os Mg-like', c='g')
+    #plt.xlim(7.27*2, 7.7*2)
     # plt.axvline(x=7.4484*2, label='Os 2nd Na-like', c='k')
     # plt.axvline(x=7.2948*2, label='Ir 2nd Na-like', c='c')
     # plt.axvline(x=7.5072*2, label='Ir 2nd Mg-like', c='tab:purple')
     # plt.axvline(x=7.669*2, label='Os 2nd Mg-like', c='g')
-    # plt.legend()
-    # #plt.ylim(105, 150)
-    # #plt.show() 
-    # plt.close()
+    plt.legend()
+    #plt.ylim(105, 150)
+    #plt.show() 
+    plt.close()
 
 
     # plt.figure() 
@@ -1759,7 +2393,7 @@ for v in range(1, 11):
 
 
 
-
+###Gaussian fitting results for absolute wavelength 
 # print('#################################################################################')
 # print('Os Na-like cal  ', np.sum(np.array(osna1cal)**2)/(len(osna1cal)**2), ' nm')
 # print('Os Na-like stat : ', np.sum(np.array(osna1stat)**2)/(len(osna1stat)**2), ' nm')
@@ -1781,9 +2415,31 @@ for v in range(1, 11):
 # print('ir mg-like cal : ', np.sum(np.array(irmg1cal)**2)/(len(irmg1cal)**2), ' nm')
 # print('ir mg-like stat : ', np.sum(np.array(irmg1stat)**2)/(len(irmg1stat)**2), ' nm')
 # print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
-
 # print('#################################################################################')
 
+##Centroid fitting results for absolute wavelength 
+print('#################################################################################')
+print('Os Na-like cal  ', np.sum(np.array(cosnasetcal)**2)/(len(cosnasetcal)**2), ' nm')
+print('Os Na-like stat : ', np.sum(np.array(cosnasetstat)**2)/(len(cosnasetstat)**2), ' nm')
+#print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
+print('Os Na-like 2nd cal : ', np.sum(np.array(cosnasetcal2)**2)/(len(cosnasetcal2)**2), ' nm')
+print('Os Na-like 2nd stat : ', np.sum(np.array(cosnasetstat2)**2)/(len(cosnasetstat2)**2), ' nm')
+#print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
+
+print('ir Na-like cal : ', np.sum(np.array(cirnasetcal)**2)/(len(cirnasetcal)**2), ' nm')
+print('ir Na-like stat : ', np.sum(np.array(cirnasetstat)**2)/(len(cirnasetstat)**2), ' nm')
+#print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
+print('ir Na-like 2nd cal : ', np.sum(np.array(cirnasetcal2)**2)/(len(cirnasetcal2)**2), ' nm')
+print('ir Na-like 2nd stat : ', np.sum(np.array(cirnasetstat2)**2)/(len(cirnasetstat2)**2), ' nm')
+#print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
+
+print('Os mg-like cal : ', np.sum(np.array(cosmgsetcal)**2)/(len(cosmgsetcal)**2), ' nm')
+print('Os mg-like stat : ', np.sum(np.array(cosmgsetstat)**2)/(len(cosmgsetstat)**2), ' nm')
+#print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
+print('ir mg-like cal : ', np.sum(np.array(cirmgsetcal)**2)/(len(cirmgsetcal)**2), ' nm')
+print('ir mg-like stat : ', np.sum(np.array(cirmgsetstat)**2)/(len(cirmgsetstat)**2), ' nm')
+#print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
+print('#################################################################################')
 
 
 ##CETROID METHOD##
@@ -2131,29 +2787,41 @@ nirmgtime = nankill0(OutlierDetectionMg['irnatime'])
 nirmge = nankill0(OutlierDetectionMg['Irerr'])
 
 #1st order 
-nOsNaavg = np.average(nosna, weights = 1 / np.array(nosnae))
-nOsMgavg = np.average(nosmg, weights = 1 / np.array(nosmge))
-nIrNaavg = np.average(nirna, weights = 1 / np.array(nirnae))
-nIrMgavg = np.average(nirmg, weights = 1 / np.array(nirmge))
+# nOsNaavg = np.average(nosna, weights = 1 / np.array(nosnae))
+# nOsMgavg = np.average(nosmg, weights = 1 / np.array(nosmge))
+# nIrNaavg = np.average(nirna, weights = 1 / np.array(nirnae))
+# nIrMgavg = np.average(nirmg, weights = 1 / np.array(nirmge))
+
+nOsNaavg = np.average(osnaset, weights = 1 / np.array(osnasete))
+nOsMgavg = np.average(osmgset, weights = 1 / np.array(osmgsete))
+nIrNaavg = np.average(irnaset, weights = 1 / np.array(irnasete))
+nIrMgavg = np.average(irmgset, weights = 1 / np.array(irmgsete))
+
+nOsNaavge = np.sqrt(np.sum(np.array(osnasete)**2)) / len(osnaset)
+nOsMgavge = np.sqrt(np.sum(np.array(osmgsete)**2)) / len(osmgset)
+nIrNaavge = np.sqrt(np.sum(np.array(irnasete)**2)) / len(irnaset)
+nIrMgavge = np.sqrt(np.sum(np.array(irmgsete)**2)) / len(irmgset)
 
 #2nd order na-like 
 
-nOsNaavg2 = np.average(nosna2, weights = 1 / np.array(nosnae2))
-nIrNaavg2= np.average(nirna2, weights = 1 / np.array(nirnae2))
+# nOsNaavg2 = np.average(nosna2, weights = 1 / np.array(nosnae2))
+# nIrNaavg2= np.average(nirna2, weights = 1 / np.array(nirnae2))
+
+# nOsNaavge2 = np.sqrt(np.sum(np.array(nosnae2)**2)) / len(nosna2)
+# nIrNaavge2 = np.sqrt(np.sum(np.array(nirnae2)**2)) / len(nirna2)
+
+nOsNaavg2 = np.average(osnaset2, weights = 1 / np.array(osnasete2))
+nIrNaavg2= np.average(irnaset2, weights = 1 / np.array(irnasete2))
+
+nOsNaavge2 = np.sqrt(np.sum(np.array(osnasete2)**2)) / len(osnasete2)
+nIrNaavge2 = np.sqrt(np.sum(np.array(irnasete2)**2)) / len(irnasete2)
 
 
-
-nOsNaavge = np.sqrt(np.sum(np.array(nosnae)**2)) / len(nosna)
-nOsMgavge = np.sqrt(np.sum(np.array(nosmge)**2)) / len(nosmg)
-nIrNaavge = np.sqrt(np.sum(np.array(nirnae)**2)) / len(nirna)
-nIrMgavge = np.sqrt(np.sum(np.array(nirmge)**2)) / len(nirmg)
-
-nOsNaavge2 = np.sqrt(np.sum(np.array(nosnae2)**2)) / len(nosna2)
-nIrNaavge2 = np.sqrt(np.sum(np.array(nirnae2)**2)) / len(nirna2)
 
 
 # print('Centroid results: ')
-# print(np.average(osnacen, weights = 1 / np.array(osnacenu)), ' +/- ', np.sqrt(np.sum(np.array(osnacenu)**2))/len(osnacenu))
+# #print(np.average(osnacen, weights = 1 / np.array(osnacenu)), ' +/- ', np.sqrt(np.sum(np.array(osnacenu)**2))/len(osnacenu))
+# print(np.average(osnacen), ' +/- ', np.sqrt(np.sum(np.array(osnacenu)**2))/len(osnacenu))
 # print(np.average(osmgcen, weights = 1 / np.array(osmgcenu)), ' +/- ', np.sqrt(np.sum(np.array(osmgcenu)**2))/len(osmgcenu))
 # print(np.average(irnacen, weights = 1 / np.array(irnacenu)), ' +/- ', np.sqrt(np.sum(np.array(irnacenu)**2))/len(irnacenu))
 # print(np.average(irmgcen, weights = 1 / np.array(irmgcenu)), ' +/- ', np.sqrt(np.sum(np.array(irnacenu)**2))/len(irmgcenu))
@@ -2164,7 +2832,57 @@ nIrNaavge2 = np.sqrt(np.sum(np.array(nirnae2)**2)) / len(nirna2)
 # print('~~~')
 
 
-#averaged for absolute wavelength, USE THESE
+
+
+print('Revised Centroid results: ')
+print(np.average(cosnaset, weights=1/np.array(osnasete)), ' +/- ', np.sqrt(np.sum(np.array(cosnasete)**2))/len(cosnasete))
+print(np.average(cosmgset, weights = 1 / np.array(cosmgsete)), ' +/- ', np.sqrt(np.sum(np.array(cosmgsete)**2))/len(cosmgsete))
+print(np.average(cirnaset, weights = 1 / np.array(cirnasete)), ' +/- ', np.sqrt(np.sum(np.array(cirnasete)**2))/len(cirnasete))
+print(np.average(cirmgset, weights = 1 / np.array(cirmgsete)), ' +/- ', np.sqrt(np.sum(np.array(cirmgsete)**2))/len(cirmgsete))
+print('Absolute Na shift: ', -(JeV * hp * cs / (np.average(cosnaset, weights=1/np.array(osnasete))*10**(-9)))+(JeV*hp*cs/(np.average(cirnaset, weights = 1 / np.array(cirnasete))*10**(-9))))
+#print('Relative Na shift: ',-(JeV * hp * cs / (nasyspolycen['d_1']*10**(-9)))+(JeV*hp*cs/(nasyspolycen['d_2']*10**(-9))))
+print('Absolute Mg shift: ', -(JeV * hp * cs / (np.average(cosmgset, weights = 1 / np.array(cosmgsete))*10**(-9)))+(JeV*hp*cs/(np.average(cirmgset, weights = 1 / np.array(cirmgsete))*10**(-9))))
+#print('Relative Mg shift: ',-(JeV * hp * cs / (mgsyspolycen['d_1']*10**(-9)))+(JeV*hp*cs/(mgsyspolycen['d_2']*10**(-9))))
+
+print('2nd order: ')
+print(np.average(cosnaset2, weights=1/np.array(osnasete2)), ' +/- ', np.sqrt(np.sum(np.array(cosnasete2)**2))/len(cosnasete2))
+print(np.average(cirnaset2, weights = 1 / np.array(cirnasete2)), ' +/- ', np.sqrt(np.sum(np.array(cirnasete2)**2))/len(cirnasete2))
+
+print('~~~')
+
+
+
+
+# print('#################################################################################')
+# print('Os Na-like cal  ', np.sum(np.array(osnasetcal)**2)/(len(osnasetcal)**2), ' nm')
+# print('Os Na-like stat : ', np.sum(np.array(osnasetstat)**2)/(len(osnasetstat)**2), ' nm')
+# # print('Os Na-like 2nd cal : ', np.sum(np.array(osnasetstat)**2)/(len(osna2cal)**2), ' nm')
+# # print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
+
+# print('ir Na-like cal : ', np.sum(np.array(irnasetcal)**2)/(len(irnasetcal)**2), ' nm')
+# print('ir Na-like stat : ', np.sum(np.array(irnasetstat)**2)/(len(irnasetstat)**2), ' nm')
+# # print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
+# # print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
+
+# print('Os mg-like cal : ', np.sum(np.array(osmgsetcal)**2)/(len(osmgsetcal)**2), ' nm')
+# print('Os mg-like stat : ', np.sum(np.array(osmgsetstat)**2)/(len(osmgsetstat)**2), ' nm')
+# print('ir mg-like cal : ', np.sum(np.array(irmgsetcal)**2)/(len(irmgsetcal)**2), ' nm')
+# print('ir mg-like stat : ', np.sum(np.array(irmgsetstat)**2)/(len(irmgsetstat)**2), ' nm')
+
+
+# print('Os Na-like 2nd cal : ', np.sum(np.array(osnasetcal2)**2)/(len(osnasetcal2)**2), ' nm')
+# print('Os Na-like 2nd stat : ', np.sum(np.array(osnasetstat2)**2)/(len(osnasetstat2)**2), ' nm')
+
+# print('Ir Na-like 2nd cal : ', np.sum(np.array(irnasetcal2)**2)/(len(irnasetcal2)**2), ' nm')
+# print('Ir Na-like 2nd stat : ', np.sum(np.array(irnasetstat2)**2)/(len(irnasetstat2)**2), ' nm')
+
+
+# print('#################################################################################')
+
+# print(osmgsetstat)
+# print(irnasetstat)
+# print(irmgsetstat)
+#averaged for absolute wavelength, USE THESE (updated 4/19/2022)
 print('Absolute averaged wavelengths (gaussian fit of subtracted spectra, 1st-order): ')
 print('new Os Na avg: ', nOsNaavg, ' +/- ', nOsNaavge, ' nm')
 print('new Os Mg avg: ', nOsMgavg, ' +/- ', nOsMgavge, ' nm')
@@ -2244,8 +2962,8 @@ ntotalnummg = np.shape(nosmgtime)[0] + np.shape(nirmgtime)[0]
 
 nOsHisto = Histogram(nOsres, bins=bins, bin_range = 0.005, num=np.shape(nosnatime)[0])
 nIrHisto = Histogram(nIrres, bins=bins, bin_range = 0.005, num=np.shape(nirnatime)[0])
-nOsHistomg = Histogram(nOsresmg, bins=bins, bin_range = 0.005, num=np.shape(nosmgtime)[0])
-nIrHistomg = Histogram(nIrresmg, bins=bins, bin_range = 0.005, num = np.shape(nirmgtime)[0])
+nOsHistomg = Histogram(nOsresmg, bins=7, bin_range = 0.005, num=np.shape(nosmgtime)[0])
+nIrHistomg = Histogram(nIrresmg, bins=7, bin_range = 0.005, num = np.shape(nirmgtime)[0])
 
 
 
@@ -2262,10 +2980,9 @@ print('1st Na order wavelength diff: ')
 print(ndW, np.sqrt(nosunc**2+nirunc**2 ))
 print('1st mg order wavelength diff: ')
 print(ndWmg, np.sqrt(nosuncmg**2+niruncmg**2 ))
-
-
-# print('here')
-# print(nosuncmg, niruncmg, nosuncmgcal, niruncmgcal)
+print('@@@@@@@@@')
+print(ndWmg, nosuncmg, niruncmg)
+print('@@@@@@@@@@@@@')
 
 ####
 #Second order 
@@ -2279,26 +2996,23 @@ nOsHisto2 = Histogram(nOsres2,bins=bins, bin_range = 2*0.005, num=np.shape(nosna
 nIrHisto2 = Histogram(nIrres2,bins=bins,bin_range=2*0.005,num=np.shape(nirnatime2)[0])
 nosunc2 = nOsHisto2['Line Position Error']
 nirunc2 = nIrHisto2['Line Position Error']
-nosunc2cal = nOsHisto2['mu val']
-nirunc2cal = nIrHisto2['mu val']
-ntotalunc2 = np.sqrt(nosunc2**2 + nirunc2**2 )
+# nosunc2cal = nOsHisto2['mu val']
+# nirunc2cal = nIrHisto2['mu val']
+ntotalunc2 = np.sqrt(nosunc2**2 + nirunc2**2)
 
 ntotalunce2 = 2*ndE2*(ntotalunc2/((nd12-nd22)/2))
 print('2nd order wavelength diff nm')
 print(nd12-nd22, ntotalunc2)
+print(nosunc2, nirunc2)
 print('~~')
 print('2nd order na-like shift (gaussian): ' ,ndE2*2,' +/- ', ntotalunce2, ' eV')
 #print('2nd order na-like shift (centroid): ' ,ndE2c*2)
 print('~~')
 
-#ntotalunc = np.sqrt((nosunc)**2 + (nirunc)**2 + nosunccal**2 + nirunccal**2)
 ntotalunc = np.sqrt((nosunc)**2 + (nirunc)**2 )
-
 ntotalunce = ndE * (ntotalunc / ndW)
 
-#ntotaluncmg = np.sqrt((nosuncmg)**2 + (niruncmg)**2 + niruncmgcal**2 + nosuncmgcal**2)
 ntotaluncmg = np.sqrt((nosuncmg)**2 + (niruncmg)**2 )
-
 ntotaluncemg = ndEmg * (ntotaluncmg / ndWmg)
 
 nosxplot = np.linspace(np.min(nosnatime), np.max(nosnatime), num=1000)
@@ -2365,8 +3079,7 @@ nosunccal = nOsHisto['mu val']
 nirunccal = nIrHisto['mu val']
 # print('here')
 # print(nosunc, nirunc, nosunccal, nirunccal)
-#ntotalunc = np.sqrt(nosunc**2 + nirunc**2 + nosunccal**2 + nirunccal**2)
-ntotalunc = np.sqrt(nosunc**2 + nirunc**2 )
+ntotalunc = np.sqrt(nosunc**2 + nirunc**2)
 print(ntotalunc, nosunc, nirunc)
 ntotalunce = newdE * (ntotalunc / newdW)
 
@@ -2441,7 +3154,7 @@ OsMgavge = np.sqrt(np.sum(np.array(OsMge)**2)) / len(OsMg)
 IrMgavg = np.average(IrMg)
 IrMgavge = np.sqrt(np.sum(np.array(IrMge)**2)) / len(IrMg)
 
-#print('Os Na (Quad-Gauss method avged spectra): ', OsNaavg, ' +/- ', OsNaavge, ' nm')
+print('Os Na (Quad-Gauss method avged spectra): ', OsNaavg, ' +/- ', OsNaavge, ' nm')
 
 
 plt.figure()
@@ -2470,7 +3183,7 @@ plt.legend()
 plt.close() 
 
 
-#print('Ir Na (Quad-Gauss method, avged spectra):', IrNaavg, ' +/- ', IrNaavge, ' nm')
+print('Ir Na (Quad-Gauss method, avged spectra):', IrNaavg, ' +/- ', IrNaavge, ' nm')
 
 plt.figure()
 plt.scatter(calibset, IrNa, label='Ir Na')
@@ -2498,9 +3211,9 @@ plt.minorticks_on()
 plt.close() 
 
 
-#print('Os Mg (Quad-Gauss): ', OsMgavg, ' +/- ', OsMgavge, ' nm')
+print('Os Mg (Quad-Gauss): ', OsMgavg, ' +/- ', OsMgavge, ' nm')
 
-#print('Ir Mg(Quad-Gauss): ', IrMgavg, ' +/- ', IrMgavge, ' nm')
+print('Ir Mg(Quad-Gauss): ', IrMgavg, ' +/- ', IrMgavge, ' nm')
 
 plt.figure()
 plt.scatter(calibset, OsMg, label='Os Mg')

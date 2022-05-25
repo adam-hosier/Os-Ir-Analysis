@@ -35,18 +35,8 @@ offset1 = 1                     #offset in photon counts to avoid zeros for weig
 siglev1 = 1                         #number of std err used in final calc 
 binrange = 0.002
 cen2nd = 1470
-JGOsNa = 7.4491
-JGOsNae = 0.0013 
-JGIrNa = 7.2948
-JGIrNae = 0.0013
 
-SapIrNa = 7.29662
 
-DiptiIrMg = 7.507248
-DiptiOsMg = 7.669836
-
-SteveIrMg = 7.49448
-SteveOsMg = 7.65694
 
 
 
@@ -1311,7 +1301,7 @@ adapoints = [1455,
 
 
 
-#plt.figure() 
+plt.figure() 
 
 for v in range(1, 11):
     v = 2*v
@@ -1418,8 +1408,8 @@ for v in range(1, 11):
     irlin = linfit(ldatir['wave'], ldatir['y'])
     osbg = oslin['params']['b'].value + oslin['params']['m']*wave 
     irbg = irlin['params']['b'].value + irlin['params']['m']*wave
-    irbg = 0
-    osbg = 0
+    #irbg = 0
+    #osbg = 0
     phottestos = (3*((sigtestOs-osbg)))/(energy/3.6)
     phottestir = ((3*(sigtestIr-irbg)))/(energy/3.6)
     difference4 = (sigtestIr-irbg)/cIr - (sigtestOs-osbg)/cOs 
@@ -1454,9 +1444,9 @@ for v in range(1, 11):
     bg2ndlinir = linfit(bg2ndxir, bg2ndyir)
     bgyir = bg2ndlinir['params']['b'].value + bg2ndlinir['params']['m'].value*pixel
 
-    phottestos2nd = (3*((sigtestOs-bgyos)))/(energy/3.6)
+    phottestos2nd = (3*((sigtestOs-bgyos)))/(2*energy/3.6)
     #phottestos2nd = (3*((sigtestOs)))/(energy/3.6)
-    phottestir2nd = ((3*(sigtestIr-bgyir)))/(energy/3.6)
+    phottestir2nd = ((3*(sigtestIr-bgyir)))/(2*energy/3.6)
 
     difference5 = (sigtestIr-bgyir)/cIr - (sigtestOs-bgyos)/cOs
 
@@ -1503,7 +1493,11 @@ for v in range(1, 11):
     # plt.xlim(np.min(pixel), np.max(pixel))
     # plt.ylabel('ADU')
     # #plt.plot(wave, difference3, label='Ir-Os')
-    # # plt.plot(wave, phottest, label='Ir-Os')
+
+    #plt.plot(wave, phottest4, label='Ir-Os cali set #'+str(v))
+    #plt.plot(wave, phottest4)
+    #plt.plot(wave/2, phottest5, label='Ir-Os cal set #'+str(v))
+    plt.plot(wave/2, phottest5)
     # # plt.xlabel('wavelength (nm)')
     # # plt.ylabel('Photon counts')
     # plt.legend()
@@ -1511,9 +1505,18 @@ for v in range(1, 11):
     # plt.close() 
     ####1492
     #if v>=12: 
+
+
+
     #plt.plot(wave, phottestos, label='Os Cal set #'+str(v))
-    #plt.plot(pixel, phottestir, label='Ir Cal set #'+str(v))
+    #plt.plot(wave, phottestir, label='Ir Cal set #'+str(v))
+
+    #plt.plot(wave/2, phottestos2nd, label='Os Cal set #'+str(v))
+    #plt.plot(wave/2, phottestir2nd, label='Ir Cal set #'+str(v))
+    
+
     #bgtestfit = bgpolyfit(wavetest2, somenew1)
+        #plt.plot(wave, osbg, label='bg fit', c='k')
     # plt.figure() 
 
 
@@ -1601,7 +1604,7 @@ for v in range(1, 11):
     # plt.figure() 
 
     # #if v==4: 
-    # plt.plot(pixel, sigtestIr-bgtestfit['yeval'], label='Ir Cal set #'+str(v))
+    #plt.plot(pixel, sigtestIr-bgtestfit['yeval'], label='Ir Cal set #'+str(v))
     
     # plt.title('Post-background removal')
     # plt.ylabel('ADU')
@@ -1667,12 +1670,18 @@ for v in range(1, 11):
     qsetirmg = quadgfit(wave, phottest4, r=rb, c=567, num=3)
     qsetosmg = quadgfit(wave, phottest4, r=rb, c=567, num=4)
 
-    # plt.figure()
-    # plt.plot(qsetdatirna['xdat'], qsetdatirna['ydat'])
-    # plt.plot(qsetdatosna['xdat'], qsetdatosna['ydat'])
-    # plt.plot(qsetdatosna['xplot'], qsetdatosna['yplot'])
-    # plt.show()
-    # plt.close()
+    # if v==4:
+    #     plt.figure()
+    #     #plt.plot(qsetirna['xdat'], qsetirna['ydat'])
+    #     plt.plot(qsetosna['xdat'], qsetosna['ydat'], label='Ir - Os')
+    #     plt.plot(qsetosna['xplot'], qsetosna['yplot'], label='Fit')
+    #     plt.xlabel('wavelength [nm]')
+    #     plt.ylabel('Photon counts')
+    #     plt.title('Quad Gaussian Fit, Calibration set #'+str(v))
+    #     plt.minorticks_on()
+    #     plt.legend()
+    #     plt.show()
+    #     plt.close()
 
     ####1518 
     r2nd = 55
@@ -3888,6 +3897,14 @@ for v in range(1, 11):
 tsum2os = np.array(tsumosna) + np.array(tsumosmg)
 tsum2ir = np.array(tsumirna) + np.array(tsumirmg)
 
+# plt.minorticks_on()
+# plt.legend()
+# plt.xlim(7.2, 7.7)
+# plt.ylim(-40, 300)
+# plt.xlabel('Wavelength [nm]')
+# plt.ylabel('Photon counts')
+# plt.show()
+
 
 
 ####plotting avged results 
@@ -4017,7 +4034,7 @@ tsum2ir = np.array(tsumirna) + np.array(tsumirmg)
 
 
 
-
+###################################################
 # plt.figure()
 # plt.xlabel('time [hrs]')
 # plt.ylabel('total photon counts')
@@ -4031,8 +4048,11 @@ tsum2ir = np.array(tsumirna) + np.array(tsumirmg)
 # plt.minorticks_on()
 # plt.show()
 # plt.close()
- 
+ ###################################################
 
+
+
+###################################################
 # print(np.shape(ttime1os))
 # print(np.shape(ttimeosna), np.shape(ttimeosmg))
 # print(np.shape(ttime1))
@@ -4050,86 +4070,9 @@ tsum2ir = np.array(tsumirna) + np.array(tsumirmg)
 # plt.legend()
 # plt.show()
 # plt.close()
+########################################################
 
 
-
-##Gaussian fitting results for absolute wavelength 
-# print('#################################################################################')
-# print('Os Na-like cal  ', np.sum(np.array(osna1cal)**2)/(len(osna1cal)**2), ' nm')
-# print('Os Na-like stat : ', np.sum(np.array(osna1stat)**2)/(len(osna1stat)**2), ' nm')
-# print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
-# print('Os Na-like 2nd cal : ', np.sum(np.array(osna2cal)**2)/(len(osna2cal)**2), ' nm')
-# print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
-# print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
-
-# print('ir Na-like cal : ', np.sum(np.array(irna1cal)**2)/(len(irna1cal)**2), ' nm')
-# print('ir Na-like stat : ', np.sum(np.array(irna1stat)**2)/(len(irna1stat)**2), ' nm')
-# print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
-# print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
-# print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
-# print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
-
-# print('Os mg-like cal : ', np.sum(np.array(osmg1cal)**2)/(len(osmg1cal)**2), ' nm')
-# print('Os mg-like stat : ', np.sum(np.array(osmg1stat)**2)/(len(osmg1stat)**2), ' nm')
-# print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
-# print('ir mg-like cal : ', np.sum(np.array(irmg1cal)**2)/(len(irmg1cal)**2), ' nm')
-# print('ir mg-like stat : ', np.sum(np.array(irmg1stat)**2)/(len(irmg1stat)**2), ' nm')
-# print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
-# print('#################################################################################')
-
-##Centroid fitting results for absolute wavelength 
-# print('#################################################################################')
-# print('Os Na-like cal  ', np.sum(np.array(cosnasetcal)**2)/(len(cosnasetcal)**2), ' nm')
-# print('Os Na-like stat : ', np.sum(np.array(cosnasetstat)**2)/(len(cosnasetstat)**2), ' nm')
-# #print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
-# print('Os Na-like 2nd cal : ', np.sum(np.array(cosnasetcal2)**2)/(len(cosnasetcal2)**2), ' nm')
-# print('Os Na-like 2nd stat : ', np.sum(np.array(cosnasetstat2)**2)/(len(cosnasetstat2)**2), ' nm')
-# #print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
-
-# print('ir Na-like cal : ', np.sum(np.array(cirnasetcal)**2)/(len(cirnasetcal)**2), ' nm')
-# print('ir Na-like stat : ', np.sum(np.array(cirnasetstat)**2)/(len(cirnasetstat)**2), ' nm')
-# #print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
-# print('ir Na-like 2nd cal : ', np.sum(np.array(cirnasetcal2)**2)/(len(cirnasetcal2)**2), ' nm')
-# print('ir Na-like 2nd stat : ', np.sum(np.array(cirnasetstat2)**2)/(len(cirnasetstat2)**2), ' nm')
-# #print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
-
-# print('Os mg-like cal : ', np.sum(np.array(cosmgsetcal)**2)/(len(cosmgsetcal)**2), ' nm')
-# print('Os mg-like stat : ', np.sum(np.array(cosmgsetstat)**2)/(len(cosmgsetstat)**2), ' nm')
-# #print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
-# print('ir mg-like cal : ', np.sum(np.array(cirmgsetcal)**2)/(len(cirmgsetcal)**2), ' nm')
-# print('ir mg-like stat : ', np.sum(np.array(cirmgsetstat)**2)/(len(cirmgsetstat)**2), ' nm')
-# #print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
-# print('#################################################################################')
-
-###Quad Gaussian fitting results for absolute wavelength 
-print('#################################################################################')
-print('Os Na-like cal  ', np.sum(np.array(osna1cal)**2)/(len(osna1cal)**2), ' nm')
-print('Os Na-like stat : ', np.sum(np.array(osna1stat)**2)/(len(osna1stat)**2), ' nm')
-#print('Os na-like sys : ', np.sum(np.array(osna1sys)**2)/(len(osna1sys)**2))
-print('Os Na-like 2nd cal : ', np.sum(np.array(osna2cal)**2)/(len(osna2cal)**2), ' nm')
-print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
-# #print('Os Na-like 2nd sys : ', np.sum(np.array(osna2sys)**2)/(len(osna2sys)**2))
-
-print('ir Na-like cal : ', np.sum(np.array(irna1cal)**2)/(len(irna1cal)**2), ' nm')
-print('ir Na-like stat : ', np.sum(np.array(irna1stat)**2)/(len(irna1stat)**2), ' nm')
-#print('ir na-like sys : ', np.sum(np.array(irna1sys)**2)/(len(irna1sys)**2))
-print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
-print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
-# #print('ir na-like 2nd sys : ', np.sum(np.array(irna2sys)**2)/(len(irna2sys)**2))
-
-print('Os mg-like cal : ', np.sum(np.array(osmg1cal)**2)/(len(osmg1cal)**2), ' nm')
-print('Os mg-like stat : ', np.sum(np.array(osmg1stat)**2)/(len(osmg1stat)**2), ' nm')
-print('Os mg-like 2nd cal : ', np.sum(np.array(osmg2cal)**2)/(len(osmg2cal)**2), ' nm')
-print('Os mg-like 2nd stat : ', np.sum(np.array(osmg2stat)**2)/(len(osmg2stat)**2), ' nm')
-
-#print('Os mg-like sys : ', np.sum(np.array(osmg1sys)**2)/(len(osmg1sys)**2))
-print('ir mg-like cal : ', np.sum(np.array(irmg1cal)**2)/(len(irmg1cal)**2), ' nm')
-print('ir mg-like stat : ', np.sum(np.array(irmg1stat)**2)/(len(irmg1stat)**2), ' nm')
-#print('ir mg-like sys : ', np.sum(np.array(irmg1sys)**2)/(len(irmg1sys)**2))
-print('ir mg-like 2nd cal : ', np.sum(np.array(irmg2cal)**2)/(len(irmg2cal)**2), ' nm')
-print('ir mg-like 2nd stat : ', np.sum(np.array(irmg2stat)**2)/(len(irmg2stat)**2), ' nm')
-
-print('#################################################################################')
 
 ##CETROID METHOD##
 def CentPoly(specos, cenos, cenerros, specir, cenir, cenerrir):
@@ -4276,13 +4219,6 @@ osnatime2 = np.array(osnatime2)
 syspoly2 = CentPoly(osnatime2, osna2, osnae2, irnatime2, irna2, irnae2)
 
 
-# plt.figure() 
-# plt.scatter(osnatime2, osna2, label='os mg-like')
-# plt.scatter(irnatime2, irna2, label='ir mg-like')
-# plt.legend()
-# plt.show() 
-# plt.close() 
-
 
 
 #print('abs wavelength 2nd order here: ')
@@ -4367,9 +4303,9 @@ while OutlierDetection['badlines'] is not None:
 
         OutlierDetection = OutlierDet(a1, a2, a3, b1, b2, b3, CentPoly, crit)
 
-
-print('1st order Na-like outlier detection completed.')
 print('Na-like bad lines/spectra: ', bad_lines)
+print('1st order Na-like outlier detection completed.')
+
 ###########################
 
 aa2 = osna2 
@@ -4414,7 +4350,7 @@ while OutlierDetection2['badlines'] is not None:
 
         OutlierDetection2 = OutlierDet(a12, a22, a32, b12, b22, b32, CentPoly, crit)
 
-
+print('Na-like 2nd order bad lines/spectra: ', bad_lines2)
 print('2nd order Na-like outlier detection completed.')
 
 #### Mg-like Outlier Removal 
@@ -4462,8 +4398,9 @@ while OutlierDetectionMg['badlines'] is not None:
 
         OutlierDetectionMg = OutlierDet(dd, de, df, ed, ee, ef, CentPoly, crit)
 
-print('1st order Mg-like outlier detection completed.')
 print('Mg-like bad lines/spectra: ', mgbad_lines)
+print('1st order Mg-like outlier detection completed.')
+
 
 #####################################################
 print('starting 2nd order Mg-like outlier detection')
@@ -4610,58 +4547,68 @@ nIrNaavge2 = np.sqrt(np.sum(np.array(irnasete2)**2)) / len(irnasete2)
 
 # print(np.shape(qosmgset), np.shape(qosmgsete))
 ##Quad gauss fitting results for absolute wavelengths 
-qnOsNaavg = np.average(osna, weights = 1 / np.array(osnae))
-qnOsMgavg = np.average(osmg, weights = 1 / np.array(osmge))
-qnIrNaavg = np.average(irna, weights = 1 / np.array(irnae))
-qnIrMgavg = np.average(irmg, weights = 1 / np.array(irmge))
+qnOsNaavg = np.average(nosna, weights = 1 / np.array(nosnae))
+qnOsMgavg = np.average(nosmg, weights = 1 / np.array(nosmge))
+qnIrNaavg = np.average(nirna, weights = 1 / np.array(nirnae))
+qnIrMgavg = np.average(nirmg, weights = 1 / np.array(nirmge))
 
-qnOsNaavge = np.sqrt(np.sum(np.array(osnae)**2)) / len(osnae)
-qnOsMgavge = np.sqrt(np.sum(np.array(osmge)**2)) / len(osmge)
-qnIrNaavge = np.sqrt(np.sum(np.array(irnae)**2)) / len(irnae)
-qnIrMgavge = np.sqrt(np.sum(np.array(irmge)**2)) / len(irmge)
+qnOsNaavge = np.sqrt(np.sum(np.array(nosnae)**2)) / len(nosnae)
+qnOsMgavge = np.sqrt(np.sum(np.array(nosmge)**2)) / len(nosmge)
+qnIrNaavge = np.sqrt(np.sum(np.array(nirnae)**2)) / len(nirnae)
+qnIrMgavge = np.sqrt(np.sum(np.array(nirmge)**2)) / len(nirmge)
 
-qnOsNaavg2 = np.average(osna2, weights = 1 / np.array(osnae2))
-qnOsMgavg2 = np.average(osmg2, weights = 1 / np.array(osmge2))
-qnIrNaavg2 = np.average(irna2, weights = 1 / np.array(irnae2))
-qnIrMgavg2 = np.average(irmg2, weights = 1 / np.array(irmge2))
+qnOsNaavgecal = np.sqrt(np.sum(np.array(osna1cal)**2)) / len(osna1cal)
+qnOsMgavgecal = np.sqrt(np.sum(np.array(osmg1cal)**2)) / len(osmg1cal)
+qnIrNaavgecal = np.sqrt(np.sum(np.array(irna1cal)**2)) / len(irna1cal)
+qnIrMgavgecal = np.sqrt(np.sum(np.array(irmg1cal)**2)) / len(irmg1cal)
 
-qnOsNaavge2 = np.sqrt(np.sum(np.array(osnae2)**2)) / len(osnae2)
-qnOsMgavge2 = np.sqrt(np.sum(np.array(osmge2)**2)) / len(osmge2)
-qnIrNaavge2 = np.sqrt(np.sum(np.array(irnae2)**2)) / len(irnae2)
-qnIrMgavge2 = np.sqrt(np.sum(np.array(irmge2)**2)) / len(irmge2)
+qnOsNaavg2 = np.average(nosna2, weights = 1 / np.array(nosnae2))
+qnOsMgavg2 = np.average(nosmg2, weights = 1 / np.array(nosmge2))
+qnIrNaavg2 = np.average(nirna2, weights = 1 / np.array(nirnae2))
+qnIrMgavg2 = np.average(nirmg2, weights = 1 / np.array(nirmge2))
 
+qnOsNaavge2cal = np.sqrt(np.sum(np.array(osna2cal)**2)) / len(osna2cal)
+qnOsMgavge2cal = np.sqrt(np.sum(np.array(osmg2cal)**2)) / len(osmg2cal)
+qnIrNaavge2cal = np.sqrt(np.sum(np.array(irna2cal)**2)) / len(irna2cal)
+qnIrMgavge2cal = np.sqrt(np.sum(np.array(irmg2cal)**2)) / len(irmg2cal)
 
-
-
-# print('#################################################################################')
-# print('Os Na-like cal  ', np.sum(np.array(osnasetcal)**2)/(len(osnasetcal)**2), ' nm')
-# print('Os Na-like stat : ', np.sum(np.array(osnasetstat)**2)/(len(osnasetstat)**2), ' nm')
-# # print('Os Na-like 2nd cal : ', np.sum(np.array(osnasetstat)**2)/(len(osna2cal)**2), ' nm')
-# # print('Os Na-like 2nd stat : ', np.sum(np.array(osna2stat)**2)/(len(osna2stat)**2), ' nm')
-
-# print('ir Na-like cal : ', np.sum(np.array(irnasetcal)**2)/(len(irnasetcal)**2), ' nm')
-# print('ir Na-like stat : ', np.sum(np.array(irnasetstat)**2)/(len(irnasetstat)**2), ' nm')
-# # print('ir Na-like 2nd cal : ', np.sum(np.array(irna2cal)**2)/(len(irna2cal)**2), ' nm')
-# # print('ir Na-like 2nd stat : ', np.sum(np.array(irna2stat)**2)/(len(irna2stat)**2), ' nm')
-
-# print('Os mg-like cal : ', np.sum(np.array(osmgsetcal)**2)/(len(osmgsetcal)**2), ' nm')
-# print('Os mg-like stat : ', np.sum(np.array(osmgsetstat)**2)/(len(osmgsetstat)**2), ' nm')
-# print('ir mg-like cal : ', np.sum(np.array(irmgsetcal)**2)/(len(irmgsetcal)**2), ' nm')
-# print('ir mg-like stat : ', np.sum(np.array(irmgsetstat)**2)/(len(irmgsetstat)**2), ' nm')
+qnOsNaavge2 = np.sqrt(np.sum(np.array(nosnae2)**2)) / len(nosnae2)
+qnOsMgavge2 = np.sqrt(np.sum(np.array(nosmge2)**2)) / len(nosmge2)
+qnIrNaavge2 = np.sqrt(np.sum(np.array(nirnae2)**2)) / len(nirnae2)
+qnIrMgavge2 = np.sqrt(np.sum(np.array(nirmge2)**2)) / len(nirmge2)
 
 
-# print('Os Na-like 2nd cal : ', np.sum(np.array(osnasetcal2)**2)/(len(osnasetcal2)**2), ' nm')
-# print('Os Na-like 2nd stat : ', np.sum(np.array(osnasetstat2)**2)/(len(osnasetstat2)**2), ' nm')
+print('#################################################################################')
+print('Os Na-like cal  ', qnOsNaavgecal**2, ' nm')
+print('Os Na-like stat : ', qnOsNaavge**2, ' nm')
 
-# print('Ir Na-like 2nd cal : ', np.sum(np.array(irnasetcal2)**2)/(len(irnasetcal2)**2), ' nm')
-# print('Ir Na-like 2nd stat : ', np.sum(np.array(irnasetstat2)**2)/(len(irnasetstat2)**2), ' nm')
+print('Os Na-like 2nd cal : ', qnOsNaavge2cal**2, ' nm')
+print('Os Na-like 2nd stat : ', qnOsNaavge2**2, ' nm')
 
 
-# print('#################################################################################')
+print('ir Na-like cal : ', qnIrNaavgecal**2, ' nm')
+print('ir Na-like stat : ', qnIrNaavge**2, ' nm')
 
-# print(osmgsetstat)
-# print(irnasetstat)
-# print(irmgsetstat)
+print('ir Na-like 2nd cal : ', qnIrNaavge2cal**2, ' nm')
+print('ir Na-like 2nd stat : ', qnIrNaavge2**2, ' nm')
+
+
+print('Os mg-like cal : ', qnOsMgavgecal**2, ' nm')
+print('Os mg-like stat : ', qnOsMgavge**2, ' nm')
+
+print('Os mg-like 2nd cal : ', qnOsMgavge2cal**2, ' nm')
+print('Os mg-like 2nd stat : ', qnOsMgavge2**2, ' nm')
+
+
+print('ir mg-like cal : ', qnIrMgavgecal**2, ' nm')
+print('ir mg-like stat : ', qnIrMgavge**2, ' nm')
+
+print('ir mg-like 2nd cal : ', qnIrMgavge2cal**2, ' nm')
+print('ir mg-like 2nd stat : ', qnIrMgavge2**2, ' nm')
+
+print('#################################################################################')
+
+
 #averaged for absolute wavelength, USE THESE (updated 4/19/2022)
 # print('#########################################################')
 # print('Absolute averaged wavelengths (single gaussian fit of subtracted spectra, 1st-order): ')
@@ -4680,17 +4627,39 @@ qnIrMgavge2 = np.sqrt(np.sum(np.array(irmge2)**2)) / len(irmge2)
 #averaged for absolute wavelength, USE THESE (updated 4/29/2022)
 print('#########################################################')
 print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 1st-order): ')
-print('new Os Na avg: ', qnOsNaavg, ' +/- ', qnOsNaavge, ' nm')
-print('new Os Mg avg: ', qnOsMgavg, ' +/- ', qnOsMgavge, ' nm')
-print('new Ir Na avg: ', qnIrNaavg, ' +/- ', qnIrNaavge, ' nm')
-print('new Ir Mg avg: ', qnIrMgavg, ' +/- ', qnIrMgavge, ' nm')
+print('new Os Na avg: ', qnOsNaavg, ' +/- ', np.sqrt(qnOsNaavge**2+qnOsNaavgecal**2), ' nm')
+print('new Os Mg avg: ', qnOsMgavg, ' +/- ', np.sqrt(qnOsMgavge**2+qnOsMgavgecal**2), ' nm')
+print('new Ir Na avg: ', qnIrNaavg, ' +/- ', np.sqrt(qnIrNaavge**2+qnIrNaavgecal**2), ' nm')
+print('new Ir Mg avg: ', qnIrMgavg, ' +/- ', np.sqrt(qnIrMgavge**2+qnIrMgavgecal**2), ' nm')
 
 print('2222222222222222222222222222222222222')
 print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 2nd order): ')
-print('new Os Na avg: ', qnOsNaavg2, ' +/- ', qnOsNaavge2, ' nm')
-print('new Os Mg avg: ', qnOsMgavg2, ' +/- ', qnOsMgavge2, ' nm')
-print('new Ir Na avg: ', qnIrNaavg2, ' +/- ', qnIrNaavge2, ' nm')
-print('new Ir Mg avg: ', qnIrMgavg2, ' +/- ', qnIrMgavge2, ' nm')
+print('new Os Na avg: ', qnOsNaavg2, ' +/- ', np.sqrt(qnOsNaavge2**2 + qnOsNaavge2cal**2), ' nm')
+print('new Os Mg avg: ', qnOsMgavg2, ' +/- ', np.sqrt(qnOsMgavge2**2 + qnOsMgavge2cal**2), ' nm')
+print('new Ir Na avg: ', qnIrNaavg2, ' +/- ', np.sqrt(qnIrNaavge2**2 + qnIrNaavge2cal**2), ' nm')
+print('new Ir Mg avg: ', qnIrMgavg2, ' +/- ', np.sqrt(qnIrMgavge2**2 + qnIrMgavge2cal**2), ' nm')
+
+
+
+# plt.axvline(x=qnOsNaavg, label='Na-like Os', ls='--', c='k')
+# plt.axvline(x=qnOsMgavg, label='Mg-like Os', ls='-.', c='k')
+# plt.axvline(x=qnIrNaavg, label='Na-like Ir', ls='--', c='g')
+# plt.axvline(x=qnIrMgavg, label='Mg-like Ir', ls='-.', c='g')
+plt.axvline(x=qnOsNaavg2, label='Na-like Os', ls='--', c='k')
+plt.axvline(x=qnOsMgavg2, label='Mg-like Os', ls='-.', c='k')
+plt.axvline(x=qnIrNaavg2, label='Na-like Ir', ls='--', c='g')
+plt.axvline(x=qnIrMgavg2, label='Mg-like Ir', ls='-.', c='g')
+plt.minorticks_on()
+plt.legend()
+plt.xlim(7.2, 7.7)
+plt.ylim(-200, 200)
+#plt.ylim(-300, 300)
+plt.xlabel('Wavelength [nm]')
+plt.ylabel('Photon counts')
+plt.show()
+plt.close()
+
+
 
 
 ##First order poly results 
@@ -4791,8 +4760,8 @@ nIrres2 = poly(nirnatime2, na12, nb12, nc12, nd22) - nirna2
 ntotalnum2 = np.shape(nosnatime2)[0] + np.shape(nirnatime2)[0]
 # nOsHisto2 = Histogram(nOsres2,bins=bins, bin_range = 2*0.005, num=ntotalnum2)
 # nIrHisto2 = Histogram(nIrres2,bins=bins,bin_range=2*0.005,num=ntotalnum2)
-nOsHisto2 = Histogram(nOsres2,bins=bins, bin_range = 2*0.005, num=np.shape(nosnatime2)[0])
-nIrHisto2 = Histogram(nIrres2,bins=bins,bin_range=2*0.005,num=np.shape(nirnatime2)[0])
+nOsHisto2 = Histogram(nOsres2,bins=9, bin_range = 2*0.005, num=np.shape(nosnatime2)[0])
+nIrHisto2 = Histogram(nIrres2,bins=9,bin_range=2*0.005,num=np.shape(nirnatime2)[0])
 nosunc2 = nOsHisto2['Line Position Error']
 nirunc2 = nIrHisto2['Line Position Error']
 ndW2mg = -OutlierDetectionMg2['d_2']+OutlierDetectionMg2['d_1']
@@ -4848,34 +4817,120 @@ OsHisto = Histogram(Osres, bins, bin_range=0.0025, num=np.shape(osnatime)[0])
 IrHisto = Histogram(Irres, bins, bin_range=0.0025, num=np.shape(irnatime)[0])
 
 
-# plt.figure() 
-# plt.title('Histogram distribution Na-like')
-# plt.plot(nOsHisto['xplot'], nOsHisto['yplot'], c='c')
-# plt.scatter(nOsHisto['xdata'], nOsHisto['ydata'], c='b', label='Os Na-like')
-# plt.plot(nIrHisto['xplot'], nIrHisto['yplot'], c='r')
-# plt.scatter(nIrHisto['xdata'], nIrHisto['ydata'], c='tab:orange', label='Ir Na-like')
-# plt.ylabel('Counts')
-# plt.xlabel('Binned Residual (nm)')
-# plt.minorticks_on() 
-# plt.legend() 
-# plt.show() 
-# plt.close() 
+plt.figure() 
+plt.title('Histogram distribution Na-like')
+plt.plot(nOsHisto['xplot'], nOsHisto['yplot'], c='c')
+plt.scatter(nOsHisto['xdata'], nOsHisto['ydata'], c='b', label='Os Na-like')
+plt.plot(nIrHisto['xplot'], nIrHisto['yplot'], c='r')
+plt.scatter(nIrHisto['xdata'], nIrHisto['ydata'], c='tab:orange', label='Ir Na-like')
+plt.ylabel('Counts')
+plt.xlabel('Binned Residual (nm)')
+plt.minorticks_on() 
+plt.legend() 
+plt.show() 
+plt.close() 
+
+plt.figure() 
+plt.title('Histogram distribution Na-like (2nd order)')
+plt.plot(nOsHisto2['xplot'], nOsHisto2['yplot'], c='c')
+plt.scatter(nOsHisto2['xdata'], nOsHisto2['ydata'], c='b', label='Os Na-like')
+plt.plot(nIrHisto2['xplot'], nIrHisto2['yplot'], c='r')
+plt.scatter(nIrHisto2['xdata'], nIrHisto2['ydata'], c='tab:orange', label='Ir Na-like')
+plt.ylabel('Counts')
+plt.xlabel('Binned Residual (nm)')
+plt.minorticks_on() 
+plt.legend() 
+plt.show() 
+plt.close() 
 
 
+plt.figure() 
+plt.title('Histogram distribution Mg-like')
+plt.plot(nOsHistomg['xplot'], nOsHistomg['yplot'], c='c')
+plt.scatter(nOsHistomg['xdata'], nOsHistomg['ydata'], c='b', label='Os mg-like')
+plt.plot(nIrHistomg['xplot'], nIrHistomg['yplot'], c='r')
+plt.scatter(nIrHistomg['xdata'], nIrHistomg['ydata'], c='tab:orange', label='Ir mg-like')
+plt.ylabel('Counts')
+plt.xlabel('Binned Residual (nm)')
+plt.minorticks_on() 
+plt.legend() 
+plt.show() 
+plt.close() 
+
+plt.figure() 
+plt.title('Histogram distribution Mg-like (2nd order)')
+plt.plot(nOsHistomg2['xplot'], nOsHistomg2['yplot'], c='c')
+plt.scatter(nOsHistomg2['xdata'], nOsHistomg2['ydata'], c='b', label='Os mg-like')
+plt.plot(nIrHistomg2['xplot'], nIrHistomg2['yplot'], c='r')
+plt.scatter(nIrHistomg2['xdata'], nIrHistomg2['ydata'], c='tab:orange', label='Ir mg-like')
+plt.ylabel('Counts')
+plt.xlabel('Binned Residual (nm)')
+plt.minorticks_on() 
+plt.legend() 
+plt.show() 
+plt.close() 
 
 
-# plt.figure() 
-# plt.title('Histogram distribution Mg-like')
-# plt.plot(nOsHistomg['xplot'], nOsHistomg['yplot'], c='c')
-# plt.scatter(nOsHistomg['xdata'], nOsHistomg['ydata'], c='b', label='Os mg-like')
-# plt.plot(nIrHistomg['xplot'], nIrHistomg['yplot'], c='r')
-# plt.scatter(nIrHistomg['xdata'], nIrHistomg['ydata'], c='tab:orange', label='Ir mg-like')
-# plt.ylabel('Counts')
-# plt.xlabel('Binned Residual (nm)')
-# plt.minorticks_on() 
-# plt.legend() 
-# plt.show() 
-# plt.close() 
+plt.figure() 
+plt.title('Na-like 1st order Systematic Polynomial')
+plt.scatter(nosnatime, nosna, label='Os Na-like', c='b')
+plt.errorbar(nosnatime, nosna, yerr=nosnae, ls='none', c='b')
+plt.scatter(nirnatime, nirna, label='Ir Na-like', c='r')
+plt.errorbar(nirnatime, nirna, yerr=nirnae, ls='none', c='r')
+plt.plot(nosnatime, poly(nosnatime, na1, nb1, nc1, nd1))
+plt.plot(nirnatime, poly(nirnatime, na1, nb1, nc1, nd2))
+plt.xlabel('time [hr]')
+plt.ylabel('Wavelength [nm]')
+plt.minorticks_on() 
+plt.legend() 
+plt.show()
+plt.close() 
+
+plt.figure() 
+plt.title('Na-like 2nd order Systematic Polynomial')
+plt.scatter(nosnatime2, nosna2, label='Os Na-like', c='b')
+plt.errorbar(nosnatime2, nosna2, yerr=nosnae2, ls='none', c='b')
+plt.scatter(nirnatime2, nirna2, label='Ir Na-like', c='r')
+plt.errorbar(nirnatime2, nirna2, yerr=nirnae2, ls='none', c='r')
+plt.plot(nosnatime2, poly(nosnatime2, na12, nb12, nc12, nd12))
+plt.plot(nirnatime2, poly(nirnatime2, na12, nb12, nc12, nd22))
+plt.xlabel('time [hr]')
+plt.ylabel('Wavelength [nm]')
+plt.minorticks_on() 
+plt.legend() 
+plt.show()
+plt.close() 
+
+
+plt.figure() 
+plt.title('Mg-like 1st order Systematic Polynomial')
+plt.scatter(nosmgtime, nosmg, label='Os Mg-like', c='b')
+plt.errorbar(nosmgtime, nosmg, yerr=nosmge, ls='none', c='b')
+plt.scatter(nirmgtime, nirmg, label='Ir Mg-like', c='r')
+plt.errorbar(nirmgtime, nirmg, yerr=nirmge, ls='none', c='r')
+plt.plot(nosmgtime, poly(nosmgtime, na1mg, nb1mg, nc1mg, nd1mg))
+plt.plot(nirmgtime, poly(nirmgtime, na1mg, nb1mg, nc1mg, nd2mg))
+plt.xlabel('time [hr]')
+plt.ylabel('Wavelength [nm]')
+plt.minorticks_on() 
+plt.legend() 
+plt.show()
+plt.close() 
+
+plt.figure() 
+plt.title('Mg-like 2nd order Systematic Polynomial')
+plt.scatter(nosmgtime2, nosmg2, label='Os Mg-like', c='b')
+plt.errorbar(nosmgtime2, nosmg2, yerr=nosmge2, ls='none', c='b')
+plt.scatter(nirmgtime2, nirmg2, label='Ir Mg-like', c='r')
+plt.errorbar(nirmgtime2, nirmg2, yerr=nirmge2, ls='none', c='r')
+plt.plot(nosmgtime2, poly(nosmgtime2, na1mg2, nb1mg2, nc1mg2, nd1mg2))
+plt.plot(nirmgtime2, poly(nirmgtime2, na1mg2, nb1mg2, nc1mg2, nd2mg2))
+plt.xlabel('time [hr]')
+plt.ylabel('Wavelength [nm]')
+plt.minorticks_on() 
+plt.legend() 
+plt.show()
+plt.close() 
 
 
 nosunc = nOsHisto['Line Position Error']

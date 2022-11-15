@@ -18,7 +18,7 @@ import glob
 
 #plotpath = str('C:\\Users\\ahosi\\Desktop\\FileTrans4\\NewMethodPlots\\')
 #plotpath = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\TestPlots\\')
-#style = 'diff'
+#style = 'diff'w
 style = 'diff'
 r=5                               #number of data points used in analysis
 rbg = 5                                    ### do not change 
@@ -56,7 +56,7 @@ redDatatab = str(ftranloc + '\\OsIr_NucChargeRadius_ReducedDataTable3.csv')     
 specNumtab = str(ftranloc + '\\OsIr_NucChargeRadius_SpectrumNo.csv')
 dropTab = str(ftranloc + '\\OsIr_NucChargeRadius_SpectrumNo2.csv')
 
-remcen = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\removecenters.csv")
+#remcen = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\removecenters.csv")
 dfw = pd.read_csv(r""+wavefile)
 dfvis = pd.read_csv(r""+visualbadfiles)
 df = pd.read_csv(r""+redDatatab)
@@ -1300,8 +1300,13 @@ adapoints = [1455,
     1601]
 
 
+osnapc = []
+osmgpc = []
+irnapc = []
+irmgpc = []
 
-plt.figure() 
+
+#plt.figure() 
 
 for v in range(1, 11):
     v = 2*v
@@ -1486,24 +1491,69 @@ for v in range(1, 11):
     #phottestos = (3*((sigtestOs)/cOs))/(energy/3.6)
     #phottestir = ((3*(sigtestIr)/cIr))/(energy/3.6)
 
-    # plt.figure() 
-    # plt.plot(pixel, sigtestOs, label='Os',c='r')
-    # plt.plot(pixel, sigtestIr, label='Ir',c='b')
-    # plt.xlabel('Pixel')
-    # plt.xlim(np.min(pixel), np.max(pixel))
-    # plt.ylabel('ADU')
-    # #plt.plot(wave, difference3, label='Ir-Os')
 
-    #plt.plot(wave, phottest4, label='Ir-Os cali set #'+str(v))
-    #plt.plot(wave, phottest4)
-    #plt.plot(wave/2, phottest5, label='Ir-Os cal set #'+str(v))
-    plt.plot(wave/2, phottest5)
-    # # plt.xlabel('wavelength (nm)')
-    # # plt.ylabel('Photon counts')
-    # plt.legend()
-    # plt.show() 
-    # plt.close() 
-    ####1492
+
+
+    # if v==10:
+    #     print(cOs, cIr)
+    #     plt.figure() 
+    #     plt.plot(wave2, sigtestOs, label='Os',c='r')
+    #     plt.plot(wave, sigtestIr, label='Ir',c='b')
+    #     plt.xlabel('Wavelength (nm)')
+    #     plt.xlim(np.min(wave), np.max(wave))
+    #     plt.ylabel('ADU Signal (arb)')
+    #     #plt.plot(wave, difference3, label='Ir-Os')
+    #     # plt.plot(wave, phottest4, label='Ir-Os cali set #'+str(v))
+    #     # plt.plot(wave, phottest4)
+    #     # plt.plot(wave/2, phottest5, label='Ir-Os cal set #'+str(v))
+    #     # plt.plot(wave/2, phottest5)
+    #     # plt.xlabel('wavelength (nm)')
+    #     # plt.ylabel('Photon counts')
+    #     plt.minorticks_on()
+    #     plt.legend()
+    #     #plt.show() 
+    #     plt.close() 
+
+    #     plt.figure() 
+    #     #plt.title('Difference spectra, scaled to 1 frame / 1 spectra , Calibration Set #'+str(v))
+    #     ##plt.title('Difference spectra, scaled to 1 frame / 1 spectra')
+    #     plt.plot(wave2, cIr*difference2, label='Difference of Os-Ir')
+    #     plt.xlabel('Wavelength (nm)')
+    #     plt.ylabel('ADU Signal (arb)')
+    #     plt.minorticks_on() 
+    #     #plt.axhline(y=0, c='k')
+    #     #plt.xlim(np.min(wave), np.max(wave))
+    #     #plt.xlim(2*7.25, 2*7.70)
+    #     plt.xlim(np.min(wave2), np.max(wave2))
+    #     # plt.axvline(x=2*7.29198, c='r', label='Ir Na-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.44616, c='tab:purple', label='Os Na-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.50724, c='k', label='Ir Mg-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.66984, label='Os Mg-like (GRASP2K)')
+    #     plt.legend()
+    #     #plt.show() 
+    #     plt.close()
+
+
+    #     fig, (ax1, ax2) = plt.subplots(2,1)
+    #     ax1.plot(wave2, sigtestOs, label='Os',c='r')
+    #     ax1.plot(wave, sigtestIr, label='Ir',c='b')
+        
+    #     ax1.set_xlim(np.min(wave2), np.max(wave2))
+    #     ax2.set_xlim(np.min(wave2), np.max(wave2))
+    #     ax2.plot(wave2, cIr*difference2, label='Difference of Os-Ir', c='g')
+    #     ax2.set_ylabel('ADU Signal (arb. units)')
+    #     ax1.set_ylabel('ADU Signal (arb. units)')
+    #     ax2.set_xlabel('Wavelength (nm)')
+    #     ax1.legend()
+    #     ax2.legend(loc='lower right')
+    #     ax1.minorticks_on()
+    #     ax2.minorticks_on()
+    #     plt.savefig('C:\\Users\\ahosi\\OneDrive\\Desktop\\spectra.svg')
+    #     plt.show()
+        
+        
+
+    # ####1492
     #if v>=12: 
 
 
@@ -1624,6 +1674,14 @@ for v in range(1, 11):
     irnadat = datcoll(np.abs(phottest4), wave, c=544, r=rcen)
     irmgdat = datcoll(np.abs(phottest4), wave, c=574, r=rcen)
 
+    osnapc.append(osnadat['y']) 
+    osmgpc.append(osmgdat['y'])  
+    irnapc.append(irnadat['y'])
+    irmgpc.append(irmgdat['y']) 
+
+
+
+
     osnadatg = datcoll(np.abs(phottest4), wave, c=566, r=r)
     osmgdatg = datcoll(np.abs(phottest4), wave, c=597, r=r)
     irnadatg = datcoll(np.abs(phottest4), wave, c=544, r=r)
@@ -1670,18 +1728,21 @@ for v in range(1, 11):
     qsetirmg = quadgfit(wave, phottest4, r=rb, c=567, num=3)
     qsetosmg = quadgfit(wave, phottest4, r=rb, c=567, num=4)
 
-    # if v==4:
-    #     plt.figure()
-    #     #plt.plot(qsetirna['xdat'], qsetirna['ydat'])
-    #     plt.plot(qsetosna['xdat'], qsetosna['ydat'], label='Ir - Os')
-    #     plt.plot(qsetosna['xplot'], qsetosna['yplot'], label='Fit')
-    #     plt.xlabel('wavelength [nm]')
-    #     plt.ylabel('Photon counts')
-    #     plt.title('Quad Gaussian Fit, Calibration set #'+str(v))
-    #     plt.minorticks_on()
-    #     plt.legend()
-    #     plt.show()
-    #     plt.close()
+    if v==8:
+        plt.figure(figsize=(6,2.75))
+        #plt.plot(qsetirna['xdat'], qsetirna['ydat'])
+        plt.plot(qsetosna['xdat'], qsetosna['ydat'], label='Ir - Os')
+        plt.plot(qsetosna['xplot'], qsetosna['yplot'], label='Fit')
+        plt.xlabel('Wavelength [nm]')
+        plt.ylabel('Photon counts')
+        #plt.title('Quad Gaussian Fit, Calibration set #'+str(v))
+        plt.xlim(np.min(qsetosna['xplot']), np.max(qsetosna['xplot']))
+        plt.minorticks_on()
+        plt.legend()
+        #plt.set
+        plt.savefig('C:\\Users\\ahosi\\OneDrive\\Desktop\\quadfit.svg')
+        plt.show()
+        plt.close()
 
     ####1518 
     r2nd = 55
@@ -3673,24 +3734,25 @@ for v in range(1, 11):
     cosnasetstat2.append(np.sqrt(np.sum(np.array(tempvalec)**2)) / len(tempvalc))
     
     
-    
-    # plt.figure() 
-    # plt.title('Difference spectra, scaled to 1 frame / 1 spectra , Calibration Set #'+str(v))
-    # plt.plot(pixel, difference2, label='Difference of Os-Ir')
-    # plt.xlabel('pixel number')
-    # plt.ylabel('ADU Signal')
-    # plt.minorticks_on() 
-    # plt.axhline(y=0, c='k')
-    # #plt.xlim(np.min(wave), np.max(wave))
-    # #plt.xlim(2*7.25, 2*7.70)
-    # #plt.xlim(7.25, 7.70)
-    # # plt.axvline(x=2*7.29198, c='r', label='Ir Na-like (GRASP2K)')
-    # # plt.axvline(x=2*7.44616, c='tab:purple', label='Os Na-like (GRASP2K)')
-    # # plt.axvline(x=2*7.50724, c='k', label='Ir Mg-like (GRASP2K)')
-    # # plt.axvline(x=2*7.66984, label='Os Mg-like (GRASP2K)')
-    # plt.legend()
-    # #plt.show() 
-    # plt.close()
+    # if v==10:
+    #     plt.figure() 
+    #     #plt.title('Difference spectra, scaled to 1 frame / 1 spectra , Calibration Set #'+str(v))
+    #     plt.title('Difference spectra, scaled to 1 frame / 1 spectra')
+    #     plt.plot(wave2, difference2, label='Difference of Os-Ir')
+    #     plt.xlabel('Wavelength (nm)')
+    #     plt.ylabel('ADU Signal (arb)')
+    #     plt.minorticks_on() 
+    #     #plt.axhline(y=0, c='k')
+    #     #plt.xlim(np.min(wave), np.max(wave))
+    #     #plt.xlim(2*7.25, 2*7.70)
+    #     plt.xlim(np.min(wave2), np.max(wave2))
+    #     # plt.axvline(x=2*7.29198, c='r', label='Ir Na-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.44616, c='tab:purple', label='Os Na-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.50724, c='k', label='Ir Mg-like (GRASP2K)')
+    #     # plt.axvline(x=2*7.66984, label='Os Mg-like (GRASP2K)')
+    #     plt.legend()
+    #     plt.show() 
+    #     plt.close()
 
     ###First order 
     c = 567
@@ -3892,6 +3954,11 @@ for v in range(1, 11):
     calunc = temp[0,0]
     calunc2 = temp2[0,0]
 
+
+print(np.sum(osnapc))
+print(np.sum(osmgpc))
+print(np.sum(irnapc))
+print(np.sum(irmgpc))
 
 
 tsum2os = np.array(tsumosna) + np.array(tsumosmg)
@@ -4578,35 +4645,35 @@ qnIrNaavge2 = np.sqrt(np.sum(np.array(nirnae2)**2)) / len(nirnae2)
 qnIrMgavge2 = np.sqrt(np.sum(np.array(nirmge2)**2)) / len(nirmge2)
 
 
-print('#################################################################################')
-print('Os Na-like cal  ', qnOsNaavgecal**2, ' nm')
-print('Os Na-like stat : ', qnOsNaavge**2, ' nm')
+# print('#################################################################################')
+# print('Os Na-like cal  ', qnOsNaavgecal**2, ' nm')
+# print('Os Na-like stat : ', qnOsNaavge**2, ' nm')
 
-print('Os Na-like 2nd cal : ', qnOsNaavge2cal**2, ' nm')
-print('Os Na-like 2nd stat : ', qnOsNaavge2**2, ' nm')
-
-
-print('ir Na-like cal : ', qnIrNaavgecal**2, ' nm')
-print('ir Na-like stat : ', qnIrNaavge**2, ' nm')
-
-print('ir Na-like 2nd cal : ', qnIrNaavge2cal**2, ' nm')
-print('ir Na-like 2nd stat : ', qnIrNaavge2**2, ' nm')
+# print('Os Na-like 2nd cal : ', qnOsNaavge2cal**2, ' nm')
+# print('Os Na-like 2nd stat : ', qnOsNaavge2**2, ' nm')
 
 
-print('Os mg-like cal : ', qnOsMgavgecal**2, ' nm')
-print('Os mg-like stat : ', qnOsMgavge**2, ' nm')
+# print('ir Na-like cal : ', qnIrNaavgecal**2, ' nm')
+# print('ir Na-like stat : ', qnIrNaavge**2, ' nm')
 
-print('Os mg-like 2nd cal : ', qnOsMgavge2cal**2, ' nm')
-print('Os mg-like 2nd stat : ', qnOsMgavge2**2, ' nm')
+# print('ir Na-like 2nd cal : ', qnIrNaavge2cal**2, ' nm')
+# print('ir Na-like 2nd stat : ', qnIrNaavge2**2, ' nm')
 
 
-print('ir mg-like cal : ', qnIrMgavgecal**2, ' nm')
-print('ir mg-like stat : ', qnIrMgavge**2, ' nm')
+# print('Os mg-like cal : ', qnOsMgavgecal**2, ' nm')
+# print('Os mg-like stat : ', qnOsMgavge**2, ' nm')
 
-print('ir mg-like 2nd cal : ', qnIrMgavge2cal**2, ' nm')
-print('ir mg-like 2nd stat : ', qnIrMgavge2**2, ' nm')
+# print('Os mg-like 2nd cal : ', qnOsMgavge2cal**2, ' nm')
+# print('Os mg-like 2nd stat : ', qnOsMgavge2**2, ' nm')
 
-print('#################################################################################')
+
+# print('ir mg-like cal : ', qnIrMgavgecal**2, ' nm')
+# print('ir mg-like stat : ', qnIrMgavge**2, ' nm')
+
+# print('ir mg-like 2nd cal : ', qnIrMgavge2cal**2, ' nm')
+# print('ir mg-like 2nd stat : ', qnIrMgavge2**2, ' nm')
+
+# print('#################################################################################')
 
 
 #averaged for absolute wavelength, USE THESE (updated 4/19/2022)
@@ -4625,19 +4692,19 @@ print('#########################################################################
 # print('#########################################################')
 
 #averaged for absolute wavelength, USE THESE (updated 4/29/2022)
-print('#########################################################')
-print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 1st-order): ')
-print('new Os Na avg: ', qnOsNaavg, ' +/- ', np.sqrt(qnOsNaavge**2+qnOsNaavgecal**2), ' nm')
-print('new Os Mg avg: ', qnOsMgavg, ' +/- ', np.sqrt(qnOsMgavge**2+qnOsMgavgecal**2), ' nm')
-print('new Ir Na avg: ', qnIrNaavg, ' +/- ', np.sqrt(qnIrNaavge**2+qnIrNaavgecal**2), ' nm')
-print('new Ir Mg avg: ', qnIrMgavg, ' +/- ', np.sqrt(qnIrMgavge**2+qnIrMgavgecal**2), ' nm')
+# print('#########################################################')
+# print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 1st-order): ')
+# print('new Os Na avg: ', qnOsNaavg, ' +/- ', np.sqrt(qnOsNaavge**2+qnOsNaavgecal**2), ' nm')
+# print('new Os Mg avg: ', qnOsMgavg, ' +/- ', np.sqrt(qnOsMgavge**2+qnOsMgavgecal**2), ' nm')
+# print('new Ir Na avg: ', qnIrNaavg, ' +/- ', np.sqrt(qnIrNaavge**2+qnIrNaavgecal**2), ' nm')
+# print('new Ir Mg avg: ', qnIrMgavg, ' +/- ', np.sqrt(qnIrMgavge**2+qnIrMgavgecal**2), ' nm')
 
-print('2222222222222222222222222222222222222')
-print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 2nd order): ')
-print('new Os Na avg: ', qnOsNaavg2, ' +/- ', np.sqrt(qnOsNaavge2**2 + qnOsNaavge2cal**2), ' nm')
-print('new Os Mg avg: ', qnOsMgavg2, ' +/- ', np.sqrt(qnOsMgavge2**2 + qnOsMgavge2cal**2), ' nm')
-print('new Ir Na avg: ', qnIrNaavg2, ' +/- ', np.sqrt(qnIrNaavge2**2 + qnIrNaavge2cal**2), ' nm')
-print('new Ir Mg avg: ', qnIrMgavg2, ' +/- ', np.sqrt(qnIrMgavge2**2 + qnIrMgavge2cal**2), ' nm')
+# print('2222222222222222222222222222222222222')
+# print('Absolute averaged wavelengths (4 gaussian fit of subtracted single spectra, 2nd order): ')
+# print('new Os Na avg: ', qnOsNaavg2, ' +/- ', np.sqrt(qnOsNaavge2**2 + qnOsNaavge2cal**2), ' nm')
+# print('new Os Mg avg: ', qnOsMgavg2, ' +/- ', np.sqrt(qnOsMgavge2**2 + qnOsMgavge2cal**2), ' nm')
+# print('new Ir Na avg: ', qnIrNaavg2, ' +/- ', np.sqrt(qnIrNaavge2**2 + qnIrNaavge2cal**2), ' nm')
+# print('new Ir Mg avg: ', qnIrMgavg2, ' +/- ', np.sqrt(qnIrMgavge2**2 + qnIrMgavge2cal**2), ' nm')
 
 
 
@@ -4827,7 +4894,7 @@ plt.ylabel('Counts')
 plt.xlabel('Binned Residual (nm)')
 plt.minorticks_on() 
 plt.legend() 
-plt.show() 
+#plt.show() 
 plt.close() 
 
 plt.figure() 
@@ -4840,7 +4907,7 @@ plt.ylabel('Counts')
 plt.xlabel('Binned Residual (nm)')
 plt.minorticks_on() 
 plt.legend() 
-plt.show() 
+#plt.show() 
 plt.close() 
 
 
@@ -4854,7 +4921,7 @@ plt.ylabel('Counts')
 plt.xlabel('Binned Residual (nm)')
 plt.minorticks_on() 
 plt.legend() 
-plt.show() 
+#plt.show() 
 plt.close() 
 
 plt.figure() 
@@ -4867,7 +4934,7 @@ plt.ylabel('Counts')
 plt.xlabel('Binned Residual (nm)')
 plt.minorticks_on() 
 plt.legend() 
-plt.show() 
+#plt.show() 
 plt.close() 
 
 
@@ -4883,7 +4950,7 @@ plt.xlabel('time [hr]')
 plt.ylabel('Wavelength [nm]')
 plt.minorticks_on() 
 plt.legend() 
-plt.show()
+#plt.show()
 plt.close() 
 
 plt.figure() 
@@ -4898,7 +4965,7 @@ plt.xlabel('time [hr]')
 plt.ylabel('Wavelength [nm]')
 plt.minorticks_on() 
 plt.legend() 
-plt.show()
+#plt.show()
 plt.close() 
 
 
@@ -4914,7 +4981,7 @@ plt.xlabel('time [hr]')
 plt.ylabel('Wavelength [nm]')
 plt.minorticks_on() 
 plt.legend() 
-plt.show()
+#plt.show()
 plt.close() 
 
 plt.figure() 
@@ -4929,7 +4996,7 @@ plt.xlabel('time [hr]')
 plt.ylabel('Wavelength [nm]')
 plt.minorticks_on() 
 plt.legend() 
-plt.show()
+#plt.show()
 plt.close() 
 
 

@@ -1494,7 +1494,7 @@ for v in range(1, 11):
 
 
 
-    # if v==10:
+    if v==10:
     #     print(cOs, cIr)
     #     plt.figure() 
     #     plt.plot(wave2, sigtestOs, label='Os',c='r')
@@ -1534,22 +1534,23 @@ for v in range(1, 11):
     #     plt.close()
 
 
-    #     fig, (ax1, ax2) = plt.subplots(2,1)
-    #     ax1.plot(wave2, sigtestOs, label='Os',c='r')
-    #     ax1.plot(wave, sigtestIr, label='Ir',c='b')
+        fig, (ax1, ax2) = plt.subplots(2,1)
+        ax1.plot(wave2, sigtestOs, label='Os',c='r')
+        ax1.plot(wave, sigtestIr, label='Ir',c='b', linewidth=0.8)
         
-    #     ax1.set_xlim(np.min(wave2), np.max(wave2))
-    #     ax2.set_xlim(np.min(wave2), np.max(wave2))
-    #     ax2.plot(wave2, cIr*difference2, label='Difference of Os-Ir', c='g')
-    #     ax2.set_ylabel('ADU Signal (arb. units)')
-    #     ax1.set_ylabel('ADU Signal (arb. units)')
-    #     ax2.set_xlabel('Wavelength (nm)')
-    #     ax1.legend()
-    #     ax2.legend(loc='lower right')
-    #     ax1.minorticks_on()
-    #     ax2.minorticks_on()
-    #     plt.savefig('C:\\Users\\ahosi\\OneDrive\\Desktop\\spectra.svg')
-    #     plt.show()
+        ax1.set_xlim(np.min(wave2), np.max(wave2))
+        ax2.set_xlim(np.min(wave2), np.max(wave2))
+        ax2.plot(wave2, cIr*difference2, label='Difference of Os-Ir', c='g')
+        ax2.set_ylabel('ADU Signal (arb. units)')
+        ax1.set_ylabel('ADU Signal (arb. units)')
+        ax2.set_xlabel('Wavelength (nm)')
+        ax1.legend()
+        ax2.legend(loc='lower right')
+        ax1.minorticks_on()
+        ax2.minorticks_on()
+        plt.savefig('C:\\Users\\ahosi\\OneDrive\\Desktop\\spectra.svg')
+        plt.show()
+        plt.close()
         
         
 

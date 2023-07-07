@@ -15,6 +15,7 @@ import matplotlib.pylab as pl
 from matplotlib.offsetbox import AnchoredText
 import sys
 import glob
+import matplotlib
 
 #plotpath = str('C:\\Users\\ahosi\\Desktop\\FileTrans4\\NewMethodPlots\\')
 #plotpath = str('C:\\Users\\ahosi\\OneDrive\\Desktop\\TestPlots\\')
@@ -1537,7 +1538,9 @@ for v in range(1, 11):
         fig, (ax1, ax2) = plt.subplots(2,1)
         ax1.plot(wave2, sigtestOs, label='Os',c='r')
         ax1.plot(wave, sigtestIr, label='Ir',c='b', linewidth=0.8)
-        
+        current_values = plt.gca().get_yticks()
+        # using format string '{:.0f}' here but you can choose others
+        ax1.get_yaxis().set_major_formatter(matplotlib.ticker.FuncFormatter(lambda x, p: format(int(x), ',')))
         ax1.set_xlim(np.min(wave2), np.max(wave2))
         ax2.set_xlim(np.min(wave2), np.max(wave2))
         ax2.plot(wave2, cIr*difference2, label='Difference of Os-Ir', c='g')
@@ -1548,9 +1551,11 @@ for v in range(1, 11):
         ax2.legend(loc='lower right')
         ax1.minorticks_on()
         ax2.minorticks_on()
-        plt.savefig('C:\\Users\\ahosi\\OneDrive\\Desktop\\spectra.svg')
+        plt.savefig('C:\\Users\\ahosi\\Downloads\\spectra.png')
         plt.show()
         plt.close()
+
+        print('plotting done.')
         
         
 

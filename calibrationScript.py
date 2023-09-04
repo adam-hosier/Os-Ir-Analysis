@@ -1,41 +1,41 @@
 import numpy as np
-import csv 
-import math as m 
-import pandas as pd 
-from matplotlib import mlab as Ml 
+import csv
+import math as m
+import pandas as pd
+from matplotlib import mlab as Ml
 from scipy.optimize import curve_fit
 from scipy import stats
-import lmfit 
+import lmfit
 import scipy.odr.odrpack as odrpack
 import matplotlib
-import matplotlib.pyplot as plt 
-from lmfit import minimize, Parameters, report_fit, Model 
+import matplotlib.pyplot as plt
+from lmfit import minimize, Parameters, report_fit, Model
 from lmfit.models import GaussianModel
 import copy
-import os 
-from os import listdir 
-from os import walk 
+import os
+from os import listdir
+from os import walk
 from os.path import isfile, join
 import glob
 
 plot = True
 #pval = 0.025
-pval = 0.16 
+pval = 0.16
 cinterval = 95
 crit = 3.5
 siglev = 1
 
-fnew = 'C:\\Users\\ahosi\\Desktop\\Calibration6b'
-fnew2 = 'C:\\Users\\ahosi\\Desktop\\Plots2Check'
-fnew3 = 'C:\\Users\\ahosi\\Desktop\\CalSpecLines'
+fnew = '.\\Calibration6b'
+fnew2 = '.\\Plots2Check'
+fnew3 = '.\\CalSpecLines'
 
-df = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_ReducedDataTable.csv")
-df1 = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_ReducedDataTable.csv")
-df2 = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_SpectrumNo.csv")
+df = pd.read_csv(r".\\OsIr_NucChargeRadius_ReducedDataTable.csv")
+df1 = pd.read_csv(r".\\OsIr_NucChargeRadius_ReducedDataTable.csv")
+df2 = pd.read_csv(r".\\OsIr_NucChargeRadius_SpectrumNo.csv")
 
 
 df.drop(df.columns[df.columns.str.contains('Os', case=False)], axis=1, inplace=True)
-df.drop(df.columns[df.columns.str.contains('Ir', case=False)], axis=1, inplace=True)    
+df.drop(df.columns[df.columns.str.contains('Ir', case=False)], axis=1, inplace=True)
 df.drop(df.columns[df.columns.str.contains('BG', case=False)], axis=1, inplace=True)
 df.drop(df.columns[df.columns.str.contains('18p12', case=False)], axis=1, inplace=True)
 #df.drop(df.columns[df.columns.str.contains('EUV085', case=False)], axis=1, inplace=True)
@@ -44,7 +44,7 @@ df.drop(df.columns[df.columns.str.contains('5p6', case=False)], axis=1, inplace=
 df.drop(df.columns[df.columns.str.contains('EUV004_Ne_3p99keV_1', case=False)], axis=1, inplace=True)
 
 df2.drop(df2.columns[df2.columns.str.contains('Os', case=False)], axis=1, inplace=True)
-df2.drop(df2.columns[df2.columns.str.contains('Ir', case=False)], axis=1, inplace=True) 
+df2.drop(df2.columns[df2.columns.str.contains('Ir', case=False)], axis=1, inplace=True)
 df2.drop(df2.columns[df2.columns.str.contains('BG', case=False)], axis=1, inplace=True)
 df2.drop(df2.columns[df2.columns.str.contains('18p12', case=False)], axis=1, inplace=True)
 df2.drop(df2.columns[df2.columns.str.contains('5p6', case=False)], axis=1, inplace=True)
@@ -62,13 +62,13 @@ def front(self, n):
 labels = front(df1, 233).columns
 
 
-dfb = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_ReducedDataTable.csv")
-df2b = pd.read_csv(r"C:\\Users\\ahosi\\OneDrive\\Desktop\\FileTrans4\\OsIr_NucChargeRadius_SpectrumNo.csv")
+dfb = pd.read_csv(r".\\OsIr_NucChargeRadius_ReducedDataTable.csv")
+df2b = pd.read_csv(r".\\OsIr_NucChargeRadius_SpectrumNo.csv")
 #dfb = pd.read_csv(r"C:\Users\ahosi\OneDrive\Desktop\File Transfer\File Transfer\OsIr Files\OsIr_NucChargeRadius_ReducedDataTable.csv")
 #df2b = pd.read_csv(r"C:\Users\ahosi\OneDrive\Desktop\File Transfer\File Transfer\OsIr Files\OsIr_NucChargeRadius_SpectrumNo.csv")
 
 dfb.drop(dfb.columns[dfb.columns.str.contains('Os', case=False)], axis=1, inplace=True)
-dfb.drop(dfb.columns[dfb.columns.str.contains('Ir', case=False)], axis=1, inplace=True)    
+dfb.drop(dfb.columns[dfb.columns.str.contains('Ir', case=False)], axis=1, inplace=True)
 dfb.drop(dfb.columns[dfb.columns.str.contains('Ne', case=False)], axis=1, inplace=True)
 dfb.drop(dfb.columns[dfb.columns.str.contains('18p12', case=False)], axis=1, inplace=True)
 dfb.drop(dfb.columns[dfb.columns.str.contains('1ke', case=False)], axis=1, inplace=True)
@@ -78,7 +78,7 @@ dfb.drop(dfb.columns[dfb.columns.str.contains('0p9', case=False)], axis=1, inpla
 
 #dfb.drop(dfb.columns[dfb.columns.str.contains('5p6', case=False)], axis=1, inplace=True)
 df2b.drop(df2b.columns[df2b.columns.str.contains('Os', case=False)], axis=1, inplace=True)
-df2b.drop(df2b.columns[df2b.columns.str.contains('Ir', case=False)], axis=1, inplace=True) 
+df2b.drop(df2b.columns[df2b.columns.str.contains('Ir', case=False)], axis=1, inplace=True)
 df2b.drop(df2b.columns[df2b.columns.str.contains('Ne', case=False)], axis=1, inplace=True)
 df2b.drop(df2b.columns[df2b.columns.str.contains('18p12', case=False)], axis=1, inplace=True)
 df2b.drop(df2b.columns[df2b.columns.str.contains('18p12', case=False)], axis=1, inplace=True)
@@ -87,10 +87,10 @@ df2b.drop(df2b.columns[df2b.columns.str.contains('18p12', case=False)], axis=1, 
 
 #df2b.drop(df2b.columns[df2bcolumns.str.contains('5p6', case=False)], axis=1, inplace=True)
 
-#Adams lines 
+#Adams lines
 '''
-#wavelengths and errors taken from literature 
-wlenbg = np.array([4.5788, 5.2154, 5.5725, 6.1622, 6.6623, 12.392, 12.5818, 12.993, 13.3246, 15.0101, 17.2169, 17.3081]) 
+#wavelengths and errors taken from literature
+wlenbg = np.array([4.5788, 5.2154, 5.5725, 6.1622, 6.6623, 12.392, 12.5818, 12.993, 13.3246, 15.0101, 17.2169, 17.3081])
 
 wlenerrbg = np.array([0.001, 0.0025, 0.001, 0.0025, 0.0007, 0.003, 0.005, 0.003, 0.0014, 0.0005, 0.0003, 0.0005])
 
@@ -112,8 +112,8 @@ wlenerr = np.array([0.00012,
     0.00028,
     0.0008])
 
-#wavelengths and errors taken from literature 
-#wlenbg = np.array([4.5788, 5.2154, 5.5725, 6.1622, 6.6623, 12.5818, 12.993, 15.0101, 17.3081]) 
+#wavelengths and errors taken from literature
+#wlenbg = np.array([4.5788, 5.2154, 5.5725, 6.1622, 6.6623, 12.5818, 12.993, 15.0101, 17.3081])
 #wlenerrbg = np.array([0.001, 0.0025, 0.001, 0.0025, 0.0007, 0.005, 0.003, 0.0005, 0.0005])
 #cbg = np.array([96, 209, 270, 367, 447, 1248, 1297, 1527, 1775])
 
@@ -152,7 +152,7 @@ cbg = np.array([96,130,388,447, 1336])
 '''
 #################################################
 
-#Sam's lines 
+#Sam's lines
 
 wlen = np.array([
 #    6.73832,
@@ -265,9 +265,9 @@ cbg = np.array([130,
 #    1775])
 3
 r= 4
-rb=1 
-order=1 
-#subtracting last 6 spectra since the CCD plane was moved, requires separate calibration 
+rb=1
+order=1
+#subtracting last 6 spectra since the CCD plane was moved, requires separate calibration
 num_cols = len(df.columns) - 6
 num_cols2 = len(df1.columns)
 m = 0
@@ -292,11 +292,11 @@ snbg = np.zeros([len(cbg), num_colsbg-m])
 def datcoll(df, df2, c, r, rb, order, num_cols, k):  #in single spectra loop
     res = dict()
 
-    y = []   
-    ye = []                   
+    y = []
+    ye = []
 
     pix = []
-    bg = 0                  #background outside of radius of data 
+    bg = 0                  #background outside of radius of data
     photc = []                  #photon count
 
     specn = df2.iloc[0,k]
@@ -309,32 +309,32 @@ def datcoll(df, df2, c, r, rb, order, num_cols, k):  #in single spectra loop
     #Collecting data around a point of interest defined by 'c' and 'r' above, along with centroid calcs
     for i in range(1,2*r):
         y.append(df.iloc[c - r + i, k])
-        
+
         pix.append(c-r+i)
         #if y[i-1] > bg:
-        s = y[i-1]-bg    
+        s = y[i-1]-bg
         photc.append(s)
-            
-        #else:                           #if background is higher than selected data point 
+
+        #else:                           #if background is higher than selected data point
             ##photc.append(s)
-            
+
     ye = np.sqrt(photc)
 
-    
-    photc = np.array(photc) 
-    ye = np.array(ye) 
-    pix = np.array(pix) 
+
+    photc = np.array(photc)
+    ye = np.array(ye)
+    pix = np.array(pix)
     #plt.figure()
     #plt.plot(pix,photc, color=plt.cm.cool(color_idx[k]))
 
     #plt.ylabel(' intensity (ADU)')
     #plt.xlabel('channel number')
-    res['y'] = photc 
-    res['ye'] = ye 
-    res['x'] = pix 
-    res['specnum'] = specn 
+    res['y'] = photc
+    res['ye'] = ye
+    res['x'] = pix
+    res['specnum'] = specn
     #plt.show()
-    return res 
+    return res
 
 
 def fitproc(x, y, ye,c):#in single spectra loop
@@ -342,14 +342,14 @@ def fitproc(x, y, ye,c):#in single spectra loop
     fitres = dict()
 
     def fit(x, A, mu, sig):
-        return A*np.exp(-(x-mu)**2 / (2 * sig**2)) 
+        return A*np.exp(-(x-mu)**2 / (2 * sig**2))
 
     mod = Model(fit)
-    params = Parameters() 
+    params = Parameters()
     params.add('A', value = 50, min=0)
     params.add('mu', value=c)       #, min=c-1, max=c+1
     params.add('sig', value=1, min=0)
-    
+
 
     result = mod.fit(y, params=params, x=x, weights = None, method='leastsq', nan_policy='omit')
     params.update(result.params)
@@ -359,26 +359,26 @@ def fitproc(x, y, ye,c):#in single spectra loop
     fitres['mu'] = result.params['mu'].value
     fitres['muerr'] = result.params['mu'].stderr
     fitres['sig'] = result.params['sig'].value
-    fitres['sigerr'] = result.params['sig'].stderr 
-    totN = np.sum(y) 
+    fitres['sigerr'] = result.params['sig'].stderr
+    totN = np.sum(y)
     fitres['muerr2'] = result.params['sig'].value / np.sqrt(totN)
 
-    return fitres 
+    return fitres
 
 
 lim = 50
 ###Data collection across the Ne and Bg spectra (correct)
-for k in range(m, num_cols):    
+for k in range(m, num_cols):
 
     for l in range(len(c)):
 
-        datacollection = datcoll(df, df2, c[l], r, rb, order, num_cols, k) 
- 
+        datacollection = datcoll(df, df2, c[l], r, rb, order, num_cols, k)
+
         x = datacollection['x']
-        y = datacollection['y'] 
+        y = datacollection['y']
         ye = datacollection['ye']
-        
-        Gaussfit = fitproc(x,y,ye, c[l]) 
+
+        Gaussfit = fitproc(x,y,ye, c[l])
         channel[l,k] = Gaussfit['mu']
         channelerr[l,k] = Gaussfit['muerr']
         sn[l,k] = datacollection['specnum']
@@ -393,17 +393,17 @@ for k in range(m, num_cols):
 
 
 
-for k in range(m, num_colsbg):    
+for k in range(m, num_colsbg):
 
     for l in range(len(cbg)):
 
-        datacollection = datcoll(dfb, df2b, cbg[l], r, rb, order, num_colsbg, k) 
+        datacollection = datcoll(dfb, df2b, cbg[l], r, rb, order, num_colsbg, k)
 
         x = datacollection['x']
-        y = datacollection['y'] 
+        y = datacollection['y']
         ye = datacollection['ye']
-        
-        Gaussfit = fitproc(x,y,ye, cbg[l]) 
+
+        Gaussfit = fitproc(x,y,ye, cbg[l])
         channelbg[l,k] = Gaussfit['mu']
         channelerrbg[l,k] = Gaussfit['muerr']
         snbg[l,k] = datacollection['specnum']
@@ -419,7 +419,7 @@ for k in range(m, num_colsbg):
 ###
 
 '''
-def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop 
+def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop
     polyc = dict()
 
     def pfit(K, x):
@@ -436,15 +436,15 @@ def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop
             badcount += 1
         else:
             continue
-    
-    
+
+
     indexlist = np.around(indexlist)
     indexlist = indexlist.astype(int)
-    
+
     cen = np.delete(cen, indexlist)
-    cenerr = np.delete(cenerr, indexlist) 
-    wlen = np.delete(wlen, indexlist) 
-    wlenerr = np.delete(wlenerr, indexlist) 
+    cenerr = np.delete(cenerr, indexlist)
+    wlen = np.delete(wlen, indexlist)
+    wlenerr = np.delete(wlenerr, indexlist)
 
     cen = np.array(cen, dtype=np.float64)
     cenerr = np.array(cenerr, dtype=np.float64)
@@ -452,7 +452,7 @@ def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop
     wlenerr = np.array(wlenerr, dtype=np.float64)
 
 
-    mod = odrpack.Model(pfit, extra_args=None, estimate=None,implicit=False) 
+    mod = odrpack.Model(pfit, extra_args=None, estimate=None,implicit=False)
     data = odrpack.RealData(cen, y=wlen, sx=cenerr, sy=wlenerr)
     polyresult = odrpack.ODR(data=data, model=mod, beta0=[4, 0.001, 1e-6, 1e-11])
     out = polyresult.run()
@@ -469,7 +469,7 @@ def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop
     #print(residarr*wlenerr)
     red_chi_sq = np.sum(residarr**2) / (ndata - nvar)
 
-    if badcount > 3: 
+    if badcount > 3:
         polyc['K0'] = 'nan'
         polyc['K0e'] = 'nan'
         polyc['K1'] = 'nan'
@@ -492,42 +492,42 @@ def pixelcal(cen, cenerr, wlen, wlenerr, sys):#in global loop
         #print(red_chi_sq)
         #print('~~~~')
 
-    
+
     polyc['badcount'] = badcount
-    
+
     ######
-    
+
     pixel = np.linspace(0, 2047, num=2048)
     cal = test(pixel, out.beta[0], out.beta[1], out.beta[2], out.beta[3])
     polyc['calibration'] = cal
-    plt.figure() 
+    plt.figure()
     plt.plot(pixel, cal, color='b')
     plt.scatter(cen, wlen, color='r')
     plt.errorbar(cen, wlen, yerr=wlenerr, xerr=cenerr, ls='none')
     #plt.show()
     plt.close()
     ######
-    
+
     #out.pprint()
     return polyc
 '''
 
 #function used to remove NaN's
 def nankill(arr, arre, spec):
-    
+
     indexlist = np.zeros([1,0])
     for i in range(len(arr)):
         if arr[i] == 'nan':
             indexlist = np.append(indexlist,i)
         else:
             continue
-    
-    
+
+
     indexlist = np.around(indexlist)
     indexlist = indexlist.astype(int)
-    
+
     arr = np.delete(arr, indexlist)
-    arre = np.delete(arre, indexlist) 
+    arre = np.delete(arre, indexlist)
     spec = np.delete(spec, indexlist)
     arr = np.array(arr, dtype=np.float64)
     arre = np.array(arre, dtype=np.float64)
@@ -536,26 +536,26 @@ def nankill(arr, arre, spec):
     res = dict()
     res['arr'] = arr
     res['arre'] = arre
-    res['spec'] = spec 
-    return res 
+    res['spec'] = spec
+    return res
 
 #derivative of the calibration function to calculate confidence bands
 def deriv(x, B, C, D, unc):
-    
+
     return (B + 2*C*x + 3*D*x**2)*unc
 
-#partial derivatives w.r.t. fitting coefficients column vector of calibration polynomial to calc confidence bands 
+#partial derivatives w.r.t. fitting coefficients column vector of calibration polynomial to calc confidence bands
 def parts(x):
-    
+
     arr = np.zeros([4,1])
 
     arr[0,0] = 1
-    arr[1,0] = x 
-    arr[2,0] = x**2 
+    arr[1,0] = x
+    arr[2,0] = x**2
     arr[3,0] = x**3
 
 
-    return arr 
+    return arr
 
 pixel = np.linspace(0,2047, num=2048)
 ap = np.zeros((4,0))
@@ -565,7 +565,7 @@ for i in range(len(pixel)):
 
 
 
-def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop 
+def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     polyc = dict()
     cb = np.zeros([1,np.shape(ap)[1]])
     cbno = np.zeros([1,np.shape(ap)[1]])
@@ -573,14 +573,14 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
         return A + B*x + C*x**2 + D*x**3
 
     mod = Model(pfit)
-    params = Parameters() 
+    params = Parameters()
     params.add('A', value=4)
     params.add('B', value=1e-02)
     params.add('C', value=1e-04)
     params.add('D', value=1e-07)
 
     mod2 = Model(pfit)
-    params2 = Parameters() 
+    params2 = Parameters()
     params2.add('A', value=4)
     params2.add('B', value=1e-02)
     params2.add('C', value=1e-04)
@@ -599,15 +599,15 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
             badcount += 1
         else:
             continue
-    
-    
+
+
     indexlist = np.around(indexlist)
     indexlist = indexlist.astype(int)
-    
+
     cen = np.delete(cen, indexlist)
-    cenerr = np.delete(cenerr, indexlist) 
-    wlen = np.delete(wlen, indexlist) 
-    wlenerr = np.delete(wlenerr, indexlist) 
+    cenerr = np.delete(cenerr, indexlist)
+    wlen = np.delete(wlen, indexlist)
+    wlenerr = np.delete(wlenerr, indexlist)
 
     cen = np.array(cen, dtype=np.float64)
     cenerr = np.array(cenerr, dtype=np.float64)
@@ -625,14 +625,14 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
         return A + B*x + C*x**2 + D*x**3
 
     chanluncnm = testd(cen, fit.params['B'].value, fit.params['C'].value, fit.params['D'].value, cenerr)
-    
+
     cutoff = 1.5        #cutoff reduced chi-squared value for iterative systematic uncertainty estimation
     inc = 0.000005          #incremental step for " " " " (nm)
     maxit = 1000           #max iterations for " " " "
     b = 0
     pixel = np.linspace(0, 2047, num=2048)
     #print('initial: ', fit.redchi)
-    while fit.redchi > cutoff: 
+    while fit.redchi > cutoff:
         chanluncnm = testd(cen, fit.params['B'].value, fit.params['C'].value, fit.params['D'].value, cenerr)
         newerr = np.sqrt((wlenerr)**2 + (chanluncnm)**2) + (b*inc)
         fit = mod.fit(x=cen, data=wlen, params=params, nan_policy='omit', weights=1/newerr, max_nfev=2000)
@@ -645,7 +645,7 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     # if type(sunc) == 'numpy.ndarray':
     #     print('@@@')
     #     sunc = float(sunc)
-        
+
     # else:
     #     sunc = sunc
 
@@ -679,8 +679,8 @@ def pixelcal2(cen, cenerr, wlen, wlenerr):#in global loop
     conband = np.reshape(conband, (np.shape(conband)[0],1)).T
     conbandno = fitno.eval_uncertainty(sigma=siglev, x=cal)
 
-  
-    polyc['cbno'] = cbno 
+
+    polyc['cbno'] = cbno
     polyc['paramsno'] = fitno.params
     polyc['covarno'] = fitno.covar
     polyc['residualno'] = residualno
@@ -716,13 +716,13 @@ badc = np.zeros([1,num_cols])
 specnumber = sn[0,:]
 specnumberbg = snbg[0,:]
 
-#polynomial for temporal evolution of lines 
+#polynomial for temporal evolution of lines
 def fun(x, A, B, C, D, E, F):
     return A + B*x + C*x**2 + D*x**3 + E*x**4 + F*x**5
 
-#histogram analysis to determine the distribution of the data around the fit 
+#histogram analysis to determine the distribution of the data around the fit
 def Histo(resid, bins, bin_range):
-    binneddata = np.histogram(resid, bins=bins, range=[-bin_range, bin_range])         #binned data 
+    binneddata = np.histogram(resid, bins=bins, range=[-bin_range, bin_range])         #binned data
 
 
     HisRes = dict()
@@ -731,12 +731,12 @@ def Histo(resid, bins, bin_range):
     uncerterr = np.zeros([1, len(binneddata[0][:])])
 
     freq = np.zeros([1, len(binneddata[0][:])])
- 
+
     totalobs = 0
 
 
     for i in range(len(binneddata[1][:])-1):
-        
+
         yuncert[0,i] = (1/2) * (binneddata[1][i] + binneddata[1][i+1])
 
         if binneddata[0][i] == 0:
@@ -744,13 +744,13 @@ def Histo(resid, bins, bin_range):
         else:
             uncerterr[0,i] = 1 / np.sqrt(binneddata[0][i])
 
-        
+
         freq[0,i] = (binneddata[0][i])
 
-        totalobs += binneddata[0][i] 
+        totalobs += binneddata[0][i]
 
 
-    HisRes['totalobs'] = totalobs 
+    HisRes['totalobs'] = totalobs
 
 
     mod1 = GaussianModel()
@@ -765,7 +765,7 @@ def Histo(resid, bins, bin_range):
     plt.figure()
 
     for i in range(bins):
-        
+
         plt.scatter(yuncert[0,i], freq[0,i], color = 'b')
 
     xgraph = np.linspace(-bin_range, bin_range, num=1000)
@@ -776,7 +776,7 @@ def Histo(resid, bins, bin_range):
     cen1 = values1['center']
 
     ###################################Graphing
-    
+
     resideval = errfit.eval(params, x=xgraph)
 
     plt.plot(xgraph, resideval, color='c')
@@ -787,7 +787,7 @@ def Histo(resid, bins, bin_range):
 
     plt.close()
     #plt.show()
-    
+
     ####################################
     calcparams = params.valuesdict()
 
@@ -814,21 +814,21 @@ def OutlierDet(cen, cenerr, wlen, wlenerr, crit):       #single point removal
 
         newfit = pixelcal2(arr2, arrerr2, warr2, warrerr2)
         sunc2 = np.append(sunc2, newfit['sysunc'])
-        val = newfit['K0'] + (arr[i])*newfit['K1'] + (newfit['K2']) * (arr[i])**2 + (newfit['K3']) * (arr[i])**3 
+        val = newfit['K0'] + (arr[i])*newfit['K1'] + (newfit['K2']) * (arr[i])**2 + (newfit['K3']) * (arr[i])**3
         newres = np.append(newres, np.abs(warr[i]-val))
 
     maxres = np.max(newres)
     maxin = np.argmax(newres)
     #print(np.around(arr[maxin]).astype(int))
     #print(newfit['confband'][0,np.around(arr[maxin]).astype(int)])
-    if (maxres/(newfit['cb'][0,np.around(arr[maxin]).astype(int)])) >= crit:            #rejection criteria based on 
-        #badlines = np.append(badlines, warr[maxin]) 
+    if (maxres/(newfit['cb'][0,np.around(arr[maxin]).astype(int)])) >= crit:            #rejection criteria based on
+        #badlines = np.append(badlines, warr[maxin])
         badlines = warr[maxin]                                         #only the distance from the confidenceband
         newarr = np.delete(cen, maxin)
         newarrerr = np.delete(cenerr, maxin)
         newwarr = np.delete(wlen, maxin)
         newwarrerr = np.delete(wlenerr, maxin)
-    
+
     if (maxres/(newfit['cb'][0,np.around(arr[maxin]).astype(int)])) < crit:
         #badlines = np.append(badlines, None)
         badlines = None
@@ -846,13 +846,13 @@ def OutlierDet(cen, cenerr, wlen, wlenerr, crit):       #single point removal
     ODres['arr'] = newarr
     ODres['arrerr'] = newarrerr
     ODres['wlen'] = newwarr
-    ODres['wlenerr'] = newwarrerr 
-    ODres['badlines'] = badlines 
+    ODres['wlenerr'] = newwarrerr
+    ODres['badlines'] = badlines
     ODres['sysunc'] = newfit['sysunc']
     ODres['K0'] = newfit['K0']
     ODres['K1'] = newfit['K1']
-    ODres['K2'] = newfit['K2'] 
-    ODres['K3'] = newfit['K3'] 
+    ODres['K2'] = newfit['K2']
+    ODres['K3'] = newfit['K3']
     ODres['K0e'] = newfit['K0e']
     ODres['K1e'] = newfit['K1e']
     ODres['K2e'] = newfit['K2e']
@@ -861,9 +861,9 @@ def OutlierDet(cen, cenerr, wlen, wlenerr, crit):       #single point removal
     ODres['residual'] = newfit['residual']
     ODres['newerr'] = newfit['newerr']
     ODres['confband'] = newfit['cb']
-    
+
     return ODres
-    
+
 
 def nankill2(arr):
     rows, columns = np.shape(arr)
@@ -877,7 +877,7 @@ def nankill2(arr):
             break
         else:
             continue
-    
+
     arr = np.reshape(arr, (rows-a, columns))
     return arr
 
@@ -887,7 +887,7 @@ bins=12
 
 Kpars = ['K0', 'K1', 'K2', 'K3']
 
-####Actual calibration procedure/fitting 
+####Actual calibration procedure/fitting
 confband = np.zeros([num_cols, np.shape(ap)[1]])
 names = []
 calib = np.zeros([num_cols, len(pixel)])
@@ -898,12 +898,23 @@ cali = []
 tval1 = []
 for i in range(num_cols):
 
+
+
+    #os.mkdir(os.path.join(fnew, f'Cal{i+1}'))
+
     names.append(str(df.columns[i])+str(dfb.columns[i]))
     data1 = channel[:,i]    #Ne data
     data2 = channelbg[:,i]  #Bg data
-    data = np.append(data1, data2)
     err1 = channelerr[:,i]
     err2 = channelerrbg[:,i]
+
+    """ MONTE CARLO SIMULATION """
+    rng = np.random.default_rng()
+    data1 = rng.normal(data1.astype('float'), err1.astype('float'))
+    data2 = rng.normal(data2.astype('float'), err2.astype('float'))
+    """ END MONTE CARLO SIMULATION """
+
+    data = np.append(data1, data2)
     err = np.append(err1, err2)
     wavelerr = np.append(wlenerr, wlenerrbg)
     wavel = np.append(wlen, wlenbg)
@@ -932,7 +943,7 @@ for i in range(num_cols):
     #confband[i,:] = pcal['confband']
     confband[i,:] = pcal['cb2']
     calib[i,:] = pcal['calibration']
-    
+
     # print(pcal['cb2'])
     # print(pcal['confband'])
     # print('@@@@')
@@ -955,7 +966,7 @@ for i in range(num_cols):
     totbad = []
     a = arr[:,0]
     b = arr[:,1]
-    c = arr[:,2] 
+    c = arr[:,2]
     d = arr[:,3]
 
 
@@ -963,7 +974,7 @@ for i in range(num_cols):
     OutDet = OutlierDet(a, b, c, d,crit)
 
     while OutDet['badlines'] is not None:
-        
+
         a2 = OutDet['arr']
         b2 = OutDet['arrerr']
         c2 = OutDet['wlen']
@@ -971,16 +982,16 @@ for i in range(num_cols):
         totbad.append(OutDet['badlines'])
         sysunc2[i,0] = OutDet['sysunc']
 
-        a = a2 
-        b = b2 
-        c = c2 
-        d = d2 
-        
+        a = a2
+        b = b2
+        c = c2
+        d = d2
+
         if count > np.shape(arr)[0]:
             print('max looped')
             break
         else:
-            count +=1 
+            count +=1
             OutDet = OutlierDet(a, b, c, d,crit)
     print(totbad)
     #OutDet = OutlierDet(a, b, c, d,crit)
@@ -990,9 +1001,9 @@ for i in range(num_cols):
     postpar = np.array([Kpars, postparams, postparerr]).T
     postpardf = pd.DataFrame(data=postpar, columns=['Parameters', 'Value', 'Uncertainty'])
     postpardf.to_csv(fnew  + '/' +'Cal'+str(i+1)+ '/' + names[i]+'_' + 'PolyParameters'+ '.csv', index=False)
-    
+
     totbad = np.reshape(totbad, (len(totbad),1))
-    dfz2 = totbad 
+    dfz2 = totbad
     newdfz2 = pd.DataFrame(data=dfz2, columns=['lines removed (nm)'])
 
     newdfz2.to_csv(fnew  + '/' +'Cal'+str(i+1) + names[i]+'_' + 'RemovedLines'+ '.csv', index=False)
@@ -1000,7 +1011,7 @@ for i in range(num_cols):
     sysunc2[i,0] = newfit['sysunc']
     tval1.append(newfit['tval'])
     if plot==True:
-        # plt.figure() 
+        # plt.figure()
         # plt.title(str(df.columns[i]) + '  ,  ' + str(dfb.columns[i]))
         # plt.xlabel('Wavelength (nm)')
         # plt.ylabel('Residual (unweighted)')
@@ -1018,12 +1029,12 @@ for i in range(num_cols):
         # plt.legend()
         # plt.savefig(fnew + '/'  + 'Cal'+str(i+1)+ names[i]+ '.pdf')
 
-        
+
         # #plt.show()
-        
+
         # plt.close()
 
-        plt.figure(figsize=(15,9)) 
+        plt.figure(figsize=(15,9))
         plt.title(str(df.columns[i]) + '  ,  ' + str(dfb.columns[i]))
         plt.xlabel('Wavelength (nm)')
         plt.ylabel('Residual (unweighted)')
@@ -1050,17 +1061,17 @@ for i in range(num_cols):
         plt.legend()
         plt.savefig(fnew2 + '/'  + 'Cal'+str(i+1)+'_'+ names[i]+ '.pdf')
         #plt.show()
-        
+
         plt.close()
 
 
-        ###spectra of Ne and Bg together 
-        plt.figure(figsize=(22,9)) 
+        ###spectra of Ne and Bg together
+        plt.figure(figsize=(22,9))
         plt.title(str(df.columns[i]) + '  ,  ' + str(dfb.columns[i]))
         plt.xlabel('Wavelength (nm)')
         plt.ylabel('ADU (arb)')
         plt.plot(newfit['calibration'], df[df.keys()[i]], c='r', label=df.keys()[i])
-        plt.plot(newfit['calibration'], dfb[dfb.keys()[i]], c='b', label=dfb.keys()[i]) 
+        plt.plot(newfit['calibration'], dfb[dfb.keys()[i]], c='b', label=dfb.keys()[i])
         plt.xlim((np.min(newfit['calibration']),np.max(newfit['calibration'])) )
         for l in range(len(wlen)):
             plt.axvline(x=wlen[l], ls='--', c='tab:brown')
@@ -1068,14 +1079,14 @@ for i in range(num_cols):
         for l in range(len(wlenbg)):
             plt.axvline(x=wlenbg[l], ls='--', c='tab:gray')
 
-        plt.legend() 
+        plt.legend()
         plt.minorticks_on()
         plt.savefig(fnew2+'/'+'Cal'+str(i+1)+'_Spectra_'+ names[i]+ '.pdf')
 
         plt.close()
-        
 
-    
+
+
     cband = np.reshape(newfit['cb'], (np.shape(newfit['cb'])[1],))
     dfz = np.array([newfit['calibration'], cband]).T
 
@@ -1092,22 +1103,22 @@ for i in range(num_cols):
     '''
     temp1 = np.matmul(newfit['covar'], OsNa[:,0])
     temp = 2*np.sqrt(np.matmul(OsNa[:,0].T, temp1))
-    print('OsNa: ', temp) 
+    print('OsNa: ', temp)
 
     temp1 = np.matmul(newfit['covar'], OsMg[:,0])
     temp = 2*np.sqrt(np.matmul(OsMg[:,0].T, temp1))
-    print('OsMg: ', temp) 
+    print('OsMg: ', temp)
 
     temp1 = np.matmul(newfit['covar'], IrNa[:,0])
     temp = 2*np.sqrt(np.matmul(IrNa[:,0].T, temp1))
-    print('IrNa: ', temp) 
+    print('IrNa: ', temp)
 
     temp1 = np.matmul(newfit['covar'], IrMg[:,0])
     temp = 2*np.sqrt(np.matmul(IrMg[:,0].T, temp1))
-    print('IrMg: ', temp) 
+    print('IrMg: ', temp)
     '''
     dfcovar = np.array(newfit['covar'])
-    #print(newfit['covar']) 
+    #print(newfit['covar'])
     #print(dfcovar)
     newdfcovar = pd.DataFrame(data=dfcovar, columns=['K0', 'K1', 'K2', 'K3'])
     #newdfcovar.to_csv(fnew  + '/' + 'Cal'+str(i+1)+ names[i]+'_' + 'CovarianceMatrix'+ '.csv', index=False)

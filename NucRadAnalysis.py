@@ -973,8 +973,8 @@ for v in range(1, 11):
             # plt.plot(xplot, yplot, c='r')
             # #plt.xlim(7.28, 7.51)
             # #plt.axhline(y=0)
-            # #plt.show()
-            # plt.close()
+            # plt.show()
+            # #plt.close()
 
 
 
@@ -2719,11 +2719,11 @@ IrNaEnergye = nIrNaavge * (IrNaEnergy/nIrNaavg)
 absendiff = IrNaEnergy - OsNaEnergy
 absendiffe = np.sqrt(OsNaEnergye**2+IrNaEnergye**2)
 print('##########################################')
-print('HUNTER, USE THESE RESULTS - Na-like evaluation')
+#print('HUNTER, USE THESE RESULTS - Na-like evaluation')
 
-print(' ')
-print(' ')
-print('Absolute difference determination: ')
+print(f'\n\nNa-like Ir D1 line: {IrNaEnergy:0.4f} eV +/- {IrNaEnergye:0.4f} eV')
+
+print('\n\nAbsolute difference determination: ')
 print(absendiff, ' +/- ', absendiffe, ' eV')
 print(' ')
 print(' ')
